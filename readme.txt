@@ -2,12 +2,12 @@
 Contributors: fahem
 Tags: two-columns , three-columns , left-sidebar , custom-background, custom-logo, custom-menu, featured-images, threaded-comments, translation-ready , editor-style, sticky-post, theme-options
 Requires at least: 4.7
-Tested up to: 5.1.1
+Tested up to: 5.4.2
 Requires PHP: 5.2
-Stable tag: 1.0.7
+Stable tag: 1.0.8
 License: GNU General Public License v2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
-Copyright: Fahem Ahmed 2019.
+Copyright: Fahem Ahmed 2020.
 
 == Description ==
 Ignites is a fully responsive bootstrap4 based WordPress theme for your WordPress blog website
@@ -15,7 +15,7 @@ Ignites will always be free for you to use and customize. 
 You can ask for support or request new features in the support forum.
 
 == License ==
-Ignites WordPress Theme, Copyright Fahem Ahmed 2019.
+Ignites WordPress Theme, Copyright Fahem Ahmed 2020.
 
 Ignites is distributed under the terms of the GNU GPL
 
@@ -45,6 +45,9 @@ Menus
 The theme has one menus. The menu supports 3 levels.
 
 == Changelog ==
+
+= 1.0.7- July 24 2020 =
+* Single Page pagination Issue Fixed.
 
 = 1.0.7- April 5 2019 =
 * Jetpack Compatibility Issue Fixed.

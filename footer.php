@@ -1,4 +1,5 @@
 <?php
+
 /**
  * The template for displaying the footer
  *
@@ -10,26 +11,28 @@
  */
 
 ?>
-	</div><!-- #content -->
-    <div class="footer-section">
-        <div class="container">
-            <div class="row">
-                <div class="col-lg-12">
-                    <footer id="colophon" class="site-footer">
-                        <div class="site-info" id="copyright-txt">
-						    <?php
-						        if(get_theme_mod('copyright_txt')){
-						            echo esc_html(get_theme_mod('copyright_txt'));
-                                }else{
-						            _e('Copyright &copy; 2018 | Dope Theme','ignites');
-                                }
-						    ?>
-                        </div>
-                    </footer>
-                </div>
+</div><!-- #content -->
+<div class="footer-section">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-12">
+                <footer id="colophon" class="site-footer">
+                    <div class="site-info" id="copyright-txt">
+                        <?php
+                        if (get_theme_mod('copyright_txt')) {
+                            echo esc_html(get_theme_mod('copyright_txt'));
+                        } else {
+                            _e('Copyright &copy; ', 'ignites');
+                            echo date("Y");
+                            _e(' | <a href="//dopetheme.com">DopeTheme</a>', 'ignites');
+                        }
+                        ?>
+                    </div>
+                </footer>
             </div>
         </div>
     </div>
+</div>
 </div>
 
 <div class="scroll-top">
@@ -39,4 +42,5 @@
 <?php wp_footer(); ?>
 
 </body>
+
 </html>
