@@ -58,7 +58,6 @@ function ignites_customizer_option( $wp_customize ) {
 	  ) );
 	  
 	  function themeslug_sanitize_select( $input, $setting ) {
-	  
 		// Ensure input is a slug.
 		$input = sanitize_key( $input );
 	  

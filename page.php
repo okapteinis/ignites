@@ -18,7 +18,7 @@ get_header();
         <div class="container">
             <div class="row d-flex justify-content-center">
                 <?php 
-                    $side_layout =  get_theme_mod("ignites_sidebar_settings");
+                    $side_layout =  get_theme_mod("ignites_sidebar_settings","right-sidebar");
                     if($side_layout == 'left-sidebar'){
                         get_sidebar('widget-sidebar');
                     }
@@ -43,7 +43,6 @@ get_header();
                     </div>
                 </div>
                 <?php 
-                    $side_layout =  get_theme_mod("ignites_sidebar_settings");
                     if($side_layout == 'right-sidebar'){
                         get_sidebar('widget-sidebar');
                     }

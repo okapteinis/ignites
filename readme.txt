@@ -4,7 +4,7 @@ Tags: two-columns , three-columns , left-sidebar , custom-background, custom-log
 Requires at least: 4.7
 Tested up to: 5.8
 Requires PHP: 5.2
-Stable tag: 1.0.9
+Stable tag: 1.0.10.1
 License: GNU General Public License v2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 Copyright: Fahem Ahmed 2020.
@@ -45,6 +45,12 @@ Menus
 The theme has one menus. The menu supports 3 levels.
 
 == Changelog ==
+
+= 1.0.10.1- July 24 2021 =
+* Fixed sidebar issue after install the theme.
+
+= 1.0.10- July 24 2021 =
+* Added missing text-domain.
 
 = 1.0.9- July 24 2021 =
 * Added left sidebar,right sidebar and no sidebar option.

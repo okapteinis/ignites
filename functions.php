@@ -36,6 +36,7 @@
 					'comment-form',
 					'comment-list',
 					'caption',
+					'widgets-block-editor'
 				)
 			);
 
