@@ -36,7 +36,7 @@ function ignites_customizer_option( $wp_customize ) {
 	);
 
 	$wp_customize->add_section('ignites_sidebar_settings', array(
-		'title'    => __('Sidebar', 'ignites'),
+		'title'    => __('Sidebar','ignites'),
 		'priority' => 110,
 	));
 
@@ -49,11 +49,11 @@ function ignites_customizer_option( $wp_customize ) {
 	  $wp_customize->add_control( 'ignites_sidebar_settings', array(
 		'type' => 'select',
 		'section' => 'ignites_sidebar_settings', // Add a default or your own section
-		'label' => __( 'Sidebar Layout' ),
+		'label' => __( 'Sidebar Layout','ignites' ),
 		'choices' => array(
-		  'no-sidebar' => __( 'No Sidebar' ),
-		  'left-sidebar' => __( 'Left Sidebar' ),
-		  'right-sidebar' => __( 'Right Sidebar' ),
+		  'no-sidebar' => __( 'No Sidebar','ignites'),
+		  'left-sidebar' => __( 'Left Sidebar','ignites'),
+		  'right-sidebar' => __( 'Right Sidebar','ignites'),
 		),
 	  ) );
 	  
