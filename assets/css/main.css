@@ -1337,14 +1337,16 @@ ul.primary-menu li li:hover>ul {
     text-align: center
 }
 
-.widget-title {
+.widget-title,
+.widget_block .wp-block-group__inner-container h2 {
     font-size: 20px;
     text-transform: uppercase;
-    margin-bottom: 40px;
+    margin-bottom: 30px;
 }
 
 
-.widget-title:after {
+.widget-title:after,
+.widget_block .wp-block-group__inner-container h2:after {
     content: "";
     width: 40px;
     height: 3px;
@@ -1521,7 +1523,7 @@ ul.primary-menu li li:hover>ul {
 
 .main-content-section {
     padding: 60px 0px;
-    overflow:hidden;
+    overflow: hidden;
 }
 
 .footer-section {
@@ -1644,13 +1646,18 @@ ul.primary-menu li li:hover>ul {
     padding: 30px;
 }
 
+.tags-links {
+    line-break: anywhere;
+}
+
 .wrap-entry-meta {
     display: flex;
     align-items: center;
     margin: 20px 0px;
 }
 
-.single .wrap-entry-meta,.page .wrap-entry-meta {
+.single .wrap-entry-meta,
+.page .wrap-entry-meta {
     background: #f4f7f6;
     margin-top: 0px !important;
     padding: 20px;
@@ -1674,12 +1681,12 @@ ul.primary-menu li li:hover>ul {
     box-shadow: 0px 11px 9px 0px rgba(0, 0, 0, 0.02);
 }
 
-.user-details{
+.user-details {
     display: flex;
     justify-content: space-between;
 }
 
-.single-post .entry-footer{
+.single-post .entry-footer {
     display: flex;
     justify-content: space-between;
     border-top: 1px solid #eee;
@@ -1687,36 +1694,39 @@ ul.primary-menu li li:hover>ul {
     padding-top: 30px;
 }
 
-.author-wrap{
-    background:#fff;
+.author-wrap {
+    background: #fff;
     box-shadow: 0px 11px 9px 0px rgba(0, 0, 0, 0.02);
-    padding:30px;
+    padding: 30px;
     margin-bottom: 30px;
 }
 
-.author-img,.author-details{
+.author-img,
+.author-details {
     display: table-cell;
     vertical-align: middle;
 }
 
-@media(max-width: 600px){
-    .author-img,.author-details{
-        display:block;
+@media(max-width: 600px) {
+
+    .author-img,
+    .author-details {
+        display: block;
         padding-left: 0px !important;
     }
 }
 
-.author-img img{
+.author-img img {
     max-width: inherit;
     display: block;
     border-radius: 100%;
 }
 
-.author-details{
+.author-details {
     padding-left: 30px;
 }
 
-.author-details p{
+.author-details p {
     margin-bottom: 0px;
     margin-top: 10px;
 }
@@ -1864,8 +1874,10 @@ ul.primary-menu li li:hover>ul {
     border-radius: 0px;
 }
 
-.comment-form-author,.comment-form-email,.comment-form-url{
-    display:grid;
+.comment-form-author,
+.comment-form-email,
+.comment-form-url {
+    display: grid;
 }
 
 .form-submit .btn-primary:hover {

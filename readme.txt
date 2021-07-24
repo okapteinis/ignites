@@ -2,9 +2,9 @@
 Contributors: fahem
 Tags: two-columns , three-columns , left-sidebar , custom-background, custom-logo, custom-menu, featured-images, threaded-comments, translation-ready , editor-style, sticky-post, theme-options
 Requires at least: 4.7
-Tested up to: 5.4.2
+Tested up to: 5.8
 Requires PHP: 5.2
-Stable tag: 1.0.8
+Stable tag: 1.0.9
 License: GNU General Public License v2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 Copyright: Fahem Ahmed 2020.
@@ -46,7 +46,10 @@ The theme has one menus. The menu supports 3 levels.
 
 == Changelog ==
 
-= 1.0.7- July 24 2020 =
+= 1.0.9- July 24 2021 =
+* Added left sidebar,right sidebar and no sidebar option.
+
+= 1.0.8- July 24 2020 =
 * Single Page pagination Issue Fixed.
 
 = 1.0.7- April 5 2019 =

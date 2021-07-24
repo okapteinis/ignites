@@ -153,8 +153,11 @@ endif;
 if (!function_exists('ignites_layout_option')) :
 	function ignites_layout_option()
 	{
-		if (!is_active_sidebar('sidebar-left')) {
-			echo esc_html($layout_class = "col-lg-10 fullwidth-content");
+
+		$side_layout =  get_theme_mod("ignites_sidebar_settings");
+
+		if ($side_layout == 'no-sidebar') {
+			echo esc_html($layout_class = "col-lg-12 fullwidth-content");
 		} else {
 			echo esc_html($layout_class = "col-lg-8");
 		}
