@@ -59,10 +59,4 @@
             </div>
         </div>
     </div>
-	<?php
-	// Flush the buffer to start sending the page to the browser.
-	// This allows the browser to start rendering the head and header
-	// while the server is still processing the main content.
-	flush();
-	?>
 	<div id="content" class="site-content">
