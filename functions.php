@@ -36,7 +36,9 @@
 					'comment-form',
 					'comment-list',
 					'caption',
-					'widgets-block-editor'
+					'widgets-block-editor',
+					'script',
+					'style',
 				)
 			);
 
@@ -115,4 +117,3 @@
 	if ( defined( 'JETPACK__VERSION' ) ) {
 		require get_template_directory() . '/inc/compatibility/jetpack.php';
 	}
-

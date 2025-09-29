@@ -1,21 +1,21 @@
-﻿=== Ignites ===
-Contributors: fahem
+﻿﻿=== Ignites ===
+Contributors: fahem, Ojārs Kapteinis
 Tags: two-columns , three-columns , left-sidebar , custom-background, custom-logo, custom-menu, featured-images, threaded-comments, translation-ready , editor-style, sticky-post, theme-options
 Requires at least: 4.7
-Tested up to: 5.8
-Requires PHP: 5.2
-Stable tag: 1.0.10.1
+Tested up to: 6.5
+Requires PHP: 8.4
+Stable tag: 1.1
 License: GNU General Public License v2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
-Copyright: Fahem Ahmed 2020.
+Copyright: 2020-2025 Fahem Ahmed, Ojārs Kapteinis
 
 == Description ==
-Ignites is a fully responsive bootstrap4 based WordPress theme for your WordPress blog website
+Ignites is a fully responsive Bootstrap 5 based WordPress theme for your WordPress blog website
 Ignites will always be free for you to use and customize. 
 You can ask for support or request new features in the support forum.
 
 == License ==
-Ignites WordPress Theme, Copyright Fahem Ahmed 2020.
+Ignites WordPress Theme, Copyright 2020-2025 Fahem Ahmed, Ojārs Kapteinis
 
 Ignites is distributed under the terms of the GNU GPL
 
@@ -28,6 +28,9 @@ This program is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 GNU General Public License for more details.
+
+Note: Some contributions made in version 1.1 are licensed under CC BY-NC-ND 4.0, which is not compatible with the GPL. This may affect your rights to use, modify, and distribute this theme. Please see the Credits section for details.
+
 
 == Installation ==
 	
@@ -45,6 +48,15 @@ Menus
 The theme has one menus. The menu supports 3 levels.
 
 == Changelog ==
+
+= 1.1 - 2025-09-29 =
+* **Major Upgrade:** Migrated entire theme from Bootstrap 4 to Bootstrap 5.3.
+* **Modernization:** Updated theme to declare compatibility with PHP 8.4 and WordPress 6.5.
+* **Code Quality:** Refactored customizer JavaScript to use modern vanilla JS, improved security and internationalization in comments and post navigation, and added performance enhancements like preconnecting to Google Fonts.
+* **Accessibility (a11y):** Improved keyboard navigation and screen reader support for the mobile menu, search button, and scroll-to-top button.
+* **CSS Refactor:** Modernized stylesheets by implementing CSS variables for colors and fonts, improving consistency and maintainability.
+* **Bug Fix:** Replaced the deprecated `.media` object in the comments section with modern flexbox utilities.
+* Added Ojārs Kapteinis as a contributor.
 
 = 1.0.10.1- July 24 2021 =
 * Fixed sidebar issue after install the theme.
@@ -89,8 +101,9 @@ The theme has one menus. The menu supports 3 levels.
 
 * Based on Underscores https://underscores.me/, (C) 2012-2018 Automattic, Inc., [GPLv2 or later](https://www.gnu.org/licenses/gpl-2.0.html)
 * Based on Twenty Nineteen WordPress Theme, Copyright 2018 WordPress.org, [GPLv2 or later](https://www.gnu.org/licenses/gpl-2.0.html)
-* Bootstrap http://getbootstrap.com, (C) 2011-2018 Twitter, Inc., [MIT] (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+* Bootstrap https://getbootstrap.com, (C) 2011-2025 The Bootstrap Authors, [MIT] (https://github.com/twbs/bootstrap/blob/main/LICENSE)
 * popper.js, Copyright 2016 Federico Zivolo. Code released under the MIT license.
+* Ojārs Kapteinis (https://ojars.kapteinis.lv, @ojars@kapteinis.lv), Bootstrap 5 & PHP 8.4 upgrade, [CC BY-NC-ND 4.0](https://creativecommons.org/licenses/by-nc-nd/4.0/)
 * Linearicon (https://linearicons.com/, https://perxis.com) , free version is licensed under CC BY-SA 4.0 (https://creativecommons.org/licenses/by-sa/4.0/)
 * Other js files are self coded.
 

@@ -31,24 +31,13 @@ $ignites_comments_number = get_comments_number();
 
         <h2 class="comments-title">
 			<?php
-			$ignites_comments_number = get_comments_number();
-			if ( '1' === $ignites_comments_number ) {
-				/* translators: %s: post title */
-				printf( esc_html( 'One thought on &ldquo;%s&rdquo;', 'comments title', 'ignites' ), get_the_title() );
-			} else {
-				printf(
-				/* translators: 1: number of comments, 2: post title */
-					_nx(
-						'%1$s thought on &ldquo;%2$s&rdquo;',
-						'%1$s thoughts on &ldquo;%2$s&rdquo;',
-						esc_html($ignites_comments_number),
-						'comments title',
-						'ignites'
-					),
-					esc_html(number_format_i18n( $ignites_comments_number )),
-					get_the_title()
-				);
-			}
+			$ignites_comment_count = get_comments_number();
+			printf(
+				/* translators: 1: comment count number, 2: post title. */
+				esc_html( _n( '%1$s thought on &ldquo;%2$s&rdquo;', '%1$s thoughts on &ldquo;%2$s&rdquo;', $ignites_comment_count, 'ignites' ) ),
+				'<span class="comment-count">' . esc_html( number_format_i18n( $ignites_comment_count ) ) . '</span>',
+				'<span>' . wp_kses_post( get_the_title() ) . '</span>'
+			);
 			?>
         </h2><!-- .comments-title -->
 
@@ -58,8 +47,8 @@ $ignites_comments_number = get_comments_number();
                 <h2 class="screen-reader-text"><?php esc_html_e( 'Comment navigation', 'ignites' ); ?></h2>
                 <div class="navigation post-navigation container comment-navigation">
                     <div class="row">
-                        <div class="nav-previous col-md-6 text-left"><?php previous_comments_link( esc_html__( '<< Older Comments', 'ignites' ) ); ?></div>
-                        <div class="nav-next col-md-6 text-right"><?php next_comments_link( esc_html__( 'Newer Comments >>', 'ignites' ) ); ?></div>
+                        <div class="nav-previous col-md-6 text-start"><?php previous_comments_link( esc_html__( '<< Older Comments', 'ignites' ) ); ?></div>
+                        <div class="nav-next col-md-6 text-end"><?php next_comments_link( esc_html__( 'Newer Comments >>', 'ignites' ) ); ?></div>
                     </div>
                 </div><!-- .nav-links -->
             </nav><!-- #comment-nav-above -->
@@ -76,8 +65,8 @@ $ignites_comments_number = get_comments_number();
                 <h2 class="screen-reader-text"><?php esc_html_e( 'Comment navigation', 'ignites' ); ?></h2>
                 <div class="navigation post-navigation container comment-navigation">
                     <div class="row">
-                        <div class="nav-previous col-md-6 text-left"><?php previous_comments_link( esc_html__( '<< Older Comments', 'ignites' ) ); ?></div>
-                        <div class="nav-next col-md-6 text-right"><?php next_comments_link( esc_html__( 'Newer Comments >>', 'ignites' ) ); ?></div>
+                        <div class="nav-previous col-md-6 text-start"><?php previous_comments_link( esc_html__( '<< Older Comments', 'ignites' ) ); ?></div>
+                        <div class="nav-next col-md-6 text-end"><?php next_comments_link( esc_html__( 'Newer Comments >>', 'ignites' ) ); ?></div>
                     </div>
                 </div><!-- .nav-links -->
             </nav><!-- #comment-nav-below -->

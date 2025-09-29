@@ -35,20 +35,25 @@ if (!function_exists('ignites_post_comment')) :
 
 		if ('pingback' == $comment->comment_type || 'trackback' == $comment->comment_type) : ?>
 
-			<li id="comment-<?php comment_ID(); ?>" <?php comment_class('media'); ?>>
+			<li id="comment-<?php comment_ID(); ?>" <?php comment_class(); ?>>
 
-				<article id="div-comment-<?php comment_ID(); ?>" class="comment-body media mb-5">
-					<a class="pull-left" href="#">
+				<article id="div-comment-<?php comment_ID(); ?>" class="comment-body d-flex mb-5">
+					<div class="flex-shrink-0 me-3">
 						<?php if (0 != $args['avatar_size']) echo get_avatar($comment, $args['avatar_size']); ?>
-					</a>
+					</div>
 
-					<div class="media-body">
+					<div class="flex-grow-1">
 						<div class="media-body-wrap card">
 
 							<div class="card-header">
 								<div class="div">
 									<?php /* translators: %s: author name*/ ?>
-									<h4 class="mt-0"><?php printf(wp_kses('%s <span class="says">says:</span>', 'ignites'), sprintf('<cite class="fn">%s</cite>', get_comment_author_link(), 'ignites')); ?></h4>
+									<h4 class="mt-0">
+										<?php
+										$author_link = get_comment_author_link();
+										printf( esc_html__( '%s says:', 'ignites' ), '<cite class="fn">' . wp_kses_post( $author_link ) . '</cite>' );
+										?>
+									</h4>
 									<div class="comment-meta">
 										<a href="<?php echo esc_url(get_comment_link($comment->comment_ID)); ?>">
 											<time datetime="<?php comment_time('c'); ?>">
@@ -91,17 +96,22 @@ if (!function_exists('ignites_post_comment')) :
 			<?php else : ?>
 
 			<li id="comment-<?php comment_ID(); ?>" <?php comment_class(empty($args['has_children']) ? '' : 'parent'); ?>>
-				<article id="div-comment-<?php comment_ID(); ?>" class="comment-body media mb-5">
-					<a class="pull-left" href="#">
+				<article id="div-comment-<?php comment_ID(); ?>" class="comment-body d-flex mb-5">
+					<div class="flex-shrink-0 me-3">
 						<?php if (0 != $args['avatar_size']) echo get_avatar($comment, $args['avatar_size']); ?>
-					</a>
+					</div>
 
-					<div class="media-body">
+					<div class="flex-grow-1">
 						<div class="media-body-wrap card">
 
 							<div class="card-header">
 								<div class="div">
-									<h4 class="mt-0"><?php printf(wp_kses('%s <span class="says">says:</span>', 'ignites'), sprintf('<cite class="fn">%s</cite>', get_comment_author_link())); ?></h4>
+									<h4 class="mt-0">
+										<?php
+										$author_link = get_comment_author_link();
+										printf( esc_html__( '%s says:', 'ignites' ), '<cite class="fn">' . wp_kses_post( $author_link ) . '</cite>' );
+										?>
+									</h4>
 									<div class="comment-meta">
 										<a href="<?php echo esc_url(get_comment_link($comment->comment_ID)); ?>">
 											<time datetime="<?php comment_time('c'); ?>">
@@ -136,7 +146,7 @@ if (!function_exists('ignites_post_comment')) :
 							</div><!-- .comment-content -->
 
 						</div>
-					</div><!-- .media-body -->
+					</div><!-- .flex-grow-1 -->
 
 				</article><!-- .comment-body -->
 

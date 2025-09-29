@@ -6,52 +6,50 @@
  * Contains handlers to make Theme Customizer preview reload changes asynchronously.
  */
 
-( function( $ ) {
-
+( function() {
 	// Site title and description.
 	wp.customize( 'blogname', function( value ) {
 		value.bind( function( to ) {
-			$( '.site-title a' ).text( to );
+			const siteTitle = document.querySelector( '.site-title a' );
+			if ( siteTitle ) {
+				siteTitle.textContent = to;
+			}
 		} );
 	} );
 	wp.customize( 'blogdescription', function( value ) {
 		value.bind( function( to ) {
-			$( '.site-description' ).text( to );
+			const siteDescription = document.querySelector( '.site-description' );
+			if ( siteDescription ) {
+				siteDescription.textContent = to;
+			}
 		} );
 	} );
 
 	// Header text color.
 	wp.customize( 'header_textcolor', function( value ) {
 		value.bind( function( to ) {
+			const siteTitle = document.querySelector( '.site-title' );
+			const siteDescription = document.querySelector( '.site-description' );
+
 			if ( 'blank' === to ) {
-				$( '.site-title, .site-description' ).css( {
-					'clip': 'rect(1px, 1px, 1px, 1px)',
-					'position': 'absolute'
-				} );
+				siteTitle?.classList.add( 'screen-reader-text' );
+				siteDescription?.classList.add( 'screen-reader-text' );
 			} else {
-				$( '.site-title, .site-description' ).css( {
-					'clip': 'auto',
-					'position': 'relative'
-				} );
-				$( '.site-title a, .site-description' ).css( {
-					'color': to
-				} );
+				siteTitle?.classList.remove( 'screen-reader-text' );
+				siteDescription?.classList.remove( 'screen-reader-text' );
 			}
 		} );
 	} );
 
-    wp.customize( 'header_bg_color', function( value ) {
-        value.bind( function( to ) {
-            $( '.header-section' ).css( 'background-color', to );
-        } );
-    });
+	wp.customize( 'header_bg_color', function( value ) {
+		value.bind( function( to ) {
+			document.querySelector( '.header-section' ).style.backgroundColor = to;
+		} );
+	} );
 
-
-    wp.customize( 'copyright_txt', function( value ) {
-        value.bind( function( newvalue ) {
-            $( '#copyright-txt' ).html( newvalue);
-        } );
-    });
-
-
-} )( jQuery );
+	wp.customize( 'copyright_txt', function( value ) {
+		value.bind( function( newvalue ) {
+			document.getElementById( 'copyright-txt' ).innerHTML = newvalue;
+		} );
+	} );
+} )();

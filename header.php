@@ -39,17 +39,17 @@
 						    <?php endif; ?>
                         </div><!-- .site-branding -->
 
-                        <div class="hamburger-menu cursor-pointer">
+                        <button class="hamburger-menu cursor-pointer" aria-controls="site-navigation" aria-expanded="false">
                             <span></span>
                             <span></span>
                             <span></span>
                             <span></span>
-                        </div><!-- .hamburger-menu -->
+                        </button><!-- .hamburger-menu -->
 
                         <nav id="site-navigation" class="main-navigation slide-in transition-5s">
-                            <div class="close-navigation position-absolute transition-5s cursor-pointer">
+                            <button class="close-navigation position-absolute transition-5s cursor-pointer" aria-controls="site-navigation" aria-expanded="false">
                                 <span class="lnr lnr-cross"></span>
-                            </div>
+                            </button>
 
 		                    <?php wp_nav_menu( array( 'theme_location' => 'primary-menu', 'menu_id' => 'primary-menu', 'container' => 'ul', 'menu_class' => 'primary-menu' ) ); ?>
                         </nav><!-- #site-navigation -->
@@ -59,4 +59,10 @@
             </div>
         </div>
     </div>
+	<?php
+	// Flush the buffer to start sending the page to the browser.
+	// This allows the browser to start rendering the head and header
+	// while the server is still processing the main content.
+	flush();
+	?>
 	<div id="content" class="site-content">

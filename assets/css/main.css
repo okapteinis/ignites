@@ -407,6 +407,7 @@ button,
 [type="reset"],
 [type="submit"] {
     -webkit-appearance: button;
+    appearance: button;
 }
 
 /**
@@ -507,6 +508,7 @@ textarea {
 
 [type="search"] {
     -webkit-appearance: textfield;
+    appearance: textfield;
     /* 1 */
     outline-offset: -2px;
     /* 2 */
@@ -1016,31 +1018,18 @@ ul.primary-menu li:hover>a {
         top: 100%;
         display: block !important;
         opacity: 1;
-        -webkit-animation: slide-down .5s ease-out;
-        -moz-animation: slide-down .5s ease-out;
+        animation: slide-down .5s ease-out;
     }
 
-    @-webkit-keyframes slide-down {
+    @keyframes slide-down {
         0% {
             opacity: 0;
-            -webkit-transform: translateY(3%);
+            transform: translateY(3%);
         }
 
         100% {
             opacity: 1;
-            -webkit-transform: translateY(0);
-        }
-    }
-
-    @-moz-keyframes slide-down {
-        0% {
-            opacity: 0;
-            -moz-transform: translateY(3%);
-        }
-
-        100% {
-            opacity: 1;
-            -moz-transform: translateY(0);
+            transform: translateY(0);
         }
     }
 }
@@ -1212,13 +1201,11 @@ ul.primary-menu li li:hover>ul {
 # Alignments
 --------------------------------------------------------------*/
 .alignleft {
-    display: inline;
     float: left;
     margin-right: 1.5em;
 }
 
 .alignright {
-    display: inline;
     float: right;
     margin-left: 1.5em;
 }
@@ -2020,4 +2007,10 @@ object {
     -webkit-transition: .2s ease-in-out;
     -o-transition: .2s ease-in-out;
     transition: .2s ease-in-out;
+    border: none;
+}
+
+.scroll-top:focus-visible {
+    outline: 2px solid var(--ignites-color-black);
+    outline-offset: 2px;
 }

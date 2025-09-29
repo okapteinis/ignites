@@ -12,7 +12,7 @@ if ( ! function_exists( 'ignites_posted_on' ) ) :
 	 * Prints HTML with meta information for the current post-date/time.
 	 */
 	function ignites_posted_on() {
-		echo '<span class="posted-on">' . wp_kses_post(get_the_date()) . '</span>'; // WPCS: XSS OK.
+		echo '<span class="posted-on">' . wp_kses_post( get_the_date( get_option( 'date_format' ) ) ) . '</span>'; // WPCS: XSS OK.
 	}
 endif;
 

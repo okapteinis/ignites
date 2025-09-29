@@ -22,8 +22,8 @@
                         if (get_theme_mod('copyright_txt')) {
                             echo esc_html(get_theme_mod('copyright_txt'));
                         } else {
-                            _e('Copyright &copy; ', 'ignites');
-                            echo date("Y");
+                            echo '&copy; ' . esc_html( date( 'Y' ) ) . ' ';
+                            echo '<a href="' . esc_url( home_url( '/' ) ) . '">' . esc_html( get_bloginfo( 'name' ) ) . '</a>. ';
                             _e(' | <a href="//dopetheme.com">DopeTheme</a>', 'ignites');
                         }
                         ?>
@@ -35,9 +35,9 @@
 </div>
 </div>
 
-<div class="scroll-top">
+<button class="scroll-top" aria-label="<?php esc_attr_e( 'Scroll to top', 'ignites' ); ?>">
     <span class="lnr lnr-chevron-up"></span>
-</div>
+</button>
 
 <?php wp_footer(); ?>
 

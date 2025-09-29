@@ -1,0 +1,16 @@
+# WordPress
+/wp-admin/
+/wp-includes/
+/wp-content/plugins/
+/wp-content/themes/
+/wp-content/uploads/
+wp-config.php
+wp-content/advanced-cache.php
+wp-content/wp-cache-config.php
+/.htaccess
+
+# macOS
+.DS_Store
+
+# Node / Build
+/node_modules/
