@@ -1,0 +1,17 @@
+{
+    "name": "okapteinis/ignites",
+    "description": "A fully responsive Bootstrap 5 based WordPress theme for your WordPress blog website.",
+    "type": "wordpress-theme",
+    "license": "GPL-2.0-or-later",
+    "authors": [
+        {
+            "name": "Fahem Ahmed"
+        },
+        {
+            "name": "Ojārs Kapteinis",
+            "email": "ojars@kapteinis.lv",
+            "homepage": "https://ojars.kapteinis.lv"
+        }
+    ],
+    "require": {}
+}
