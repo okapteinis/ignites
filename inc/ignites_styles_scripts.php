@@ -4,7 +4,7 @@ $ignites_theme_info = wp_get_theme();
 define( 'IGNITES_THEME_VERSION', ( WP_DEBUG ) ? time() : $ignites_theme_info->get( 'Version' ) );
 
 function ignites_enqueue_scripts() {
-	wp_enqueue_style('bootstrap', get_template_directory_uri().'/assets/css/bootstrap.min.css',null,IGNITES_THEME_VERSION);
+	wp_enqueue_style('bootstrap-css', get_template_directory_uri().'/assets/css/bootstrap.min.css',null,IGNITES_THEME_VERSION);
 	wp_enqueue_style('ignites-main-css', get_template_directory_uri().'/assets/css/main.css',null,IGNITES_THEME_VERSION);
 	wp_enqueue_style('ignites-google-font-css', 'https://fonts.googleapis.com/css?family=Open+Sans:300,400,600,700,800',null,IGNITES_THEME_VERSION);
 	wp_enqueue_style('linearicons', get_template_directory_uri().'/assets/css/linearicons.css',null,IGNITES_THEME_VERSION);
