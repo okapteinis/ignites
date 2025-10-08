@@ -35,19 +35,19 @@
 						    <?php $ignites_description = get_bloginfo( 'description', 'display' );
 						    if ( $ignites_description || is_customize_preview() ) :
 							    ?>
-                                <p class="site-description"><?php echo $ignites_description; /* WPCS: xss ok. */ ?></p>
+                                <p class="site-description"><?php echo esc_html( $ignites_description ); ?></p>
 						    <?php endif; ?>
                         </div><!-- .site-branding -->
 
-                        <button class="hamburger-menu cursor-pointer" aria-controls="site-navigation" aria-expanded="false">
+                        <button class="hamburger-menu cursor-pointer" aria-controls="site-navigation" aria-expanded="false" aria-label="<?php esc_attr_e( 'Open menu', 'ignites' ); ?>">
                             <span></span>
                             <span></span>
                             <span></span>
                             <span></span>
                         </button><!-- .hamburger-menu -->
 
-                        <nav id="site-navigation" class="main-navigation slide-in transition-5s">
-                            <button class="close-navigation position-absolute transition-5s cursor-pointer" aria-controls="site-navigation" aria-expanded="false">
+                        <nav id="site-navigation" class="main-navigation slide-in transition-5s" aria-label="<?php esc_attr_e( 'Main navigation', 'ignites' ); ?>">
+                            <button class="close-navigation position-absolute transition-5s cursor-pointer" aria-controls="site-navigation" aria-expanded="false" aria-label="<?php esc_attr_e( 'Close menu', 'ignites' ); ?>">
                                 <span class="lnr lnr-cross"></span>
                             </button>
 
@@ -59,4 +59,4 @@
             </div>
         </div>
     </div>
-	<div id="content" class="site-content">
+	<div id="content" class="site-content" style="padding: 10px;">

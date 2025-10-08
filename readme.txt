@@ -1,9 +1,9 @@
-﻿﻿=== Ignites ===
+﻿﻿﻿﻿=== Ignites ===
 Contributors: fahem, Ojārs Kapteinis
-Tags: two-columns , three-columns , left-sidebar , custom-background, custom-logo, custom-menu, featured-images, threaded-comments, translation-ready , editor-style, sticky-post, theme-options
+Tags: two-columns, three-columns, left-sidebar, custom-background, custom-logo, custom-menu, featured-images, threaded-comments, translation-ready, editor-style, sticky-post, theme-options
 Requires at least: 4.7
-Tested up to: 6.5
-Requires PHP: 8.4
+Tested up to: 6.5.3
+Requires PHP: 7.4
 Stable tag: 1.1
 License: GNU General Public License v2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -28,8 +28,6 @@ This program is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 GNU General Public License for more details.
-
-Note: Some contributions made in version 1.1 are licensed under CC BY-NC-ND 4.0, which is not compatible with the GPL. This may affect your rights to use, modify, and distribute this theme. Please see the Credits section for details.
 
 
 == Installation ==
@@ -103,7 +101,7 @@ The theme has one menus. The menu supports 3 levels.
 * Based on Twenty Nineteen WordPress Theme, Copyright 2018 WordPress.org, [GPLv2 or later](https://www.gnu.org/licenses/gpl-2.0.html)
 * Bootstrap https://getbootstrap.com, (C) 2011-2025 The Bootstrap Authors, [MIT] (https://github.com/twbs/bootstrap/blob/main/LICENSE)
 * popper.js, Copyright 2016 Federico Zivolo. Code released under the MIT license.
-* Ojārs Kapteinis (https://ojars.kapteinis.lv, @ojars@kapteinis.lv), Bootstrap 5 & PHP 8.4 upgrade, [CC BY-NC-ND 4.0](https://creativecommons.org/licenses/by-nc-nd/4.0/)
+* Ojārs Kapteinis (https://ojars.kapteinis.lv, @ojars@kapteinis.lv), Bootstrap 5 & PHP 8.4 upgrade, [GPLv2 or later](https://www.gnu.org/licenses/gpl-2.0.html)
 * Linearicon (https://linearicons.com/, https://perxis.com) , free version is licensed under CC BY-SA 4.0 (https://creativecommons.org/licenses/by-sa/4.0/)
 * Other js files are self coded.
 

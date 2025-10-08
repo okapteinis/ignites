@@ -2009,8 +2009,7 @@ object {
     transition: .2s ease-in-out;
     border: none;
 }
-
-.scroll-top:focus-visible {
-    outline: 2px solid var(--ignites-color-black);
+.scroll-top:focus {
+    outline: 2px solid #000;
     outline-offset: 2px;
 }

@@ -1,0 +1,16 @@
+Theme Check Report for: Ignites v1.1
+=======================================
+
+**SUCCESS**: No REQUIRED issues were found. The theme meets all WordPress.org standards for submission.
+
+RECOMMENDED
+-----------
+
+*   **jQuery Dependency**: The script `ignites-main-js` has a dependency on `jquery`. Themes on WordPress.org are encouraged to use vanilla JavaScript to avoid reliance on jQuery.
+    -- File: `inc/ignites_styles_scripts.php`, Line: 16
+
+INFO
+----
+*   The theme is well-structured and follows WordPress coding standards and best practices.
+*   Internationalization, licensing, accessibility, and security measures are correctly implemented.
+*   All previously found issues have been successfully resolved.

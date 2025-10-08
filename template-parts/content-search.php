@@ -12,11 +12,6 @@
 <article id="post-<?php the_ID(); ?>" <?php post_class(); ?>>
 	<?php ignites_post_thumbnail(); ?>
     <div class="wrap-content">
-        <div class="entry-category">
-			<?php
-			    echo wp_kses_post(get_the_category_list( "&#44; "));
-			?>
-        </div>
         <header class="entry-header">
 			<?php
 			if ( is_singular() ) :
@@ -36,19 +31,13 @@
 			if(is_home()|| is_front_page()|| is_search() || is_archive()){?>
                 <p class="m-0"><?php the_excerpt(); ?></p>
 				<?php
-			}else{
 				the_content( sprintf(
-					wp_kses(
-					/* translators: %s: Name of current post. Only visible to screen readers */
-						__( 'Continue reading<span class="screen-reader-text"> "%s"</span>', 'ignites' ),
-						array(
-							'span' => array(
-								'class' => array(),
-							),
-						)
-					),
-					get_the_title()
+					/* translators: %s: Name of current post. */
+					wp_kses( __( 'Continue reading %s <span class="meta-nav">&rarr;</span>', 'ignites' ), array( 'span' => array( 'class' => array() ) ) ),
+					the_title( '<span class="screen-reader-text">"', '"</span>', false )
 				) );
+			}else{
+				the_content();
 			}
 
 
@@ -58,9 +47,5 @@
 			) );
 			?>
         </div><!-- .entry-content -->
-
-        <footer class="entry-footer">
-			<?php ignites_entry_footer(); ?>
-        </footer><!-- .entry-footer -->
     </div>
 </article><!-- #post-<?php the_ID(); ?> -->
