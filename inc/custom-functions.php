@@ -22,79 +22,74 @@ if (!function_exists('ignites_num_post_nav')) :
 endif;
 
 
-/**
- * Renders the HTML for a single comment.
- */
-if ( ! function_exists( 'ignites_render_comment_template' ) ) :
-	function ignites_render_comment_template( $comment, $args, $depth ) {
-		?>
-		<div class="flex-shrink-0 me-3">
-			<?php if ( 0 != $args['avatar_size'] ) echo get_avatar( $comment, $args['avatar_size'] ); ?>
-		</div>
-		<div class="flex-grow-1">
-			<div class="media-body-wrap card">
-				<div class="card-header">
-					<div class="div">
-						<h4 class="mt-0">
-							<?php
-							$author_link = get_comment_author_link();
-							printf( esc_html__( '%s says:', 'ignites' ), '<cite class="fn">' . wp_kses_post( $author_link ) . '</cite>' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-							?>
-						</h4>
-						<div class="comment-meta">
-							<a href="<?php echo esc_url( get_comment_link( $comment->comment_ID ) ); ?>">
-								<time datetime="<?php comment_time( 'c' ); ?>">
-									<?php
-									/* translators: 1: date, 2: time. */
-									printf( esc_html_x( '%1$s at %2$s', '1: date, 2: time', 'ignites' ), esc_html( get_comment_date() ), esc_html( get_comment_time() ) );
-									?>
-								</time>
-							</a>
-							<?php edit_comment_link( __( '<span style="margin-left: 5px;" class="lnr lnr-pencil"></span> Edit', 'ignites' ), '<span class="edit-link">', '</span>' ); ?>
-						</div>
-					</div>
-					<?php
-					comment_reply_link(
-						array_merge(
-							$args,
-							array(
-								'add_below' => 'div-comment',
-								'depth'     => $depth,
-								'max_depth' => $args['max_depth'],
-								'before'    => '<div class="reply comment-reply">',
-								'after'     => '</div><!-- .reply -->',
-							)
-						)
-					);
-					?>
-				</div>
-
-				<?php if ( '0' == $comment->comment_approved ) : ?>
-					<p class="comment-awaiting-moderation"><?php esc_html_e( 'Your comment is awaiting moderation.', 'ignites' ); ?></p>
-				<?php endif; ?>
-
-				<div class="comment-content card-block">
-					<?php comment_text(); ?>
-				</div><!-- .comment-content -->
-
-			</div>
-		</div><!-- .flex-grow-1 -->
-		<?php
-	}
-endif;
 
 /**
  * Load all comments in the single post.
  */
+
 if (!function_exists('ignites_post_comment')) :
 
 	function ignites_post_comment($comment, $args, $depth)
 	{
+		// $GLOBALS['comment'] = $comment;
+
 		if ('pingback' == $comment->comment_type || 'trackback' == $comment->comment_type) : ?>
 
 			<li id="comment-<?php comment_ID(); ?>" <?php comment_class(); ?>>
+
 				<article id="div-comment-<?php comment_ID(); ?>" class="comment-body d-flex mb-5">
-					<?php ignites_render_comment_template( $comment, $args, $depth ); ?>
+					<div class="flex-shrink-0 me-3">
+						<?php if (0 != $args['avatar_size']) echo get_avatar($comment, $args['avatar_size']); ?>
+					</div>
+
+					<div class="flex-grow-1">
+						<div class="media-body-wrap card">
+
+							<div class="card-header">
+								<div class="div">
+									<?php /* translators: %s: author name*/ ?>
+									<h4 class="mt-0">
+										<?php
+										$author_link = get_comment_author_link();
+										printf( esc_html__( '%s says:', 'ignites' ), '<cite class="fn">' . wp_kses_post( $author_link ) . '</cite>' );
+										?>
+									</h4>
+									<div class="comment-meta">
+										<a href="<?php echo esc_url(get_comment_link($comment->comment_ID)); ?>">
+											<time datetime="<?php comment_time('c'); ?>">
+												<?php
+												/* translators: 1%s: date, 2%s: time. */
+												printf(esc_html_x('%1$s at %2$s', '1: date, 2: time', 'ignites'), esc_html(get_comment_date()), esc_html(get_comment_time())); ?>
+											</time>
+										</a>
+										<?php edit_comment_link(__('<span style="margin-left: 5px;" class="lnr lnr-pencil"></span> Edit', 'ignites'), '<span class="edit-link">', '</span>'); ?>
+									</div>
+								</div>
+								<?php comment_reply_link(
+									array_merge(
+										$args,
+										array(
+											'add_below' => 'div-comment',
+											'depth' 	=> $depth,
+											'max_depth' => $args['max_depth'],
+											'before' 	=> '<div class="reply comment-reply">',
+											'after' 	=> '</div><!-- .reply -->'
+										)
+									)
+								); ?>
+							</div>
+
+							<?php if ('0' == $comment->comment_approved) : ?>
+								<p class="comment-awaiting-moderation"><?php esc_attr('Your comment is awaiting moderation.', 'ignites'); ?></p>
+							<?php endif; ?>
+
+							<div class="comment-content card-block">
+								<?php comment_text(); ?>
+							</div><!-- .comment-content -->
+
+						</div>
+					</div><!-- .media-body -->
+
 				</article><!-- .comment-body -->
 
 
@@ -102,7 +97,57 @@ if (!function_exists('ignites_post_comment')) :
 
 			<li id="comment-<?php comment_ID(); ?>" <?php comment_class(empty($args['has_children']) ? '' : 'parent'); ?>>
 				<article id="div-comment-<?php comment_ID(); ?>" class="comment-body d-flex mb-5">
-					<?php ignites_render_comment_template( $comment, $args, $depth ); ?>
+					<div class="flex-shrink-0 me-3">
+						<?php if (0 != $args['avatar_size']) echo get_avatar($comment, $args['avatar_size']); ?>
+					</div>
+
+					<div class="flex-grow-1">
+						<div class="media-body-wrap card">
+
+							<div class="card-header">
+								<div class="div">
+									<h4 class="mt-0">
+										<?php
+										$author_link = get_comment_author_link();
+										printf( esc_html__( '%s says:', 'ignites' ), '<cite class="fn">' . wp_kses_post( $author_link ) . '</cite>' );
+										?>
+									</h4>
+									<div class="comment-meta">
+										<a href="<?php echo esc_url(get_comment_link($comment->comment_ID)); ?>">
+											<time datetime="<?php comment_time('c'); ?>">
+												<?php
+												/* translators: 1%s: date, 2%s: time. */
+												printf(esc_html_x('%1$s at %2$s', '1: date, 2: time', 'ignites'), esc_html(get_comment_date()), esc_html(get_comment_time())); ?>
+											</time>
+										</a>
+										<?php edit_comment_link(__('<span style="margin-left: 5px;" class="lnr lnr-pencil"></span> Edit', 'ignites'), '<span class="edit-link">', '</span>'); ?>
+									</div>
+								</div>
+								<?php comment_reply_link(
+									array_merge(
+										$args,
+										array(
+											'add_below' => 'div-comment',
+											'depth' 	=> $depth,
+											'max_depth' => $args['max_depth'],
+											'before' 	=> '<div class="reply comment-reply">',
+											'after' 	=> '</div><!-- .reply -->'
+										)
+									)
+								); ?>
+							</div>
+
+							<?php if ('0' == $comment->comment_approved) : ?>
+								<p class="comment-awaiting-moderation"><?php esc_html_e('Your comment is awaiting moderation.', 'ignites'); ?></p>
+							<?php endif; ?>
+
+							<div class="comment-content card-block">
+								<?php comment_text(); ?>
+							</div><!-- .comment-content -->
+
+						</div>
+					</div><!-- .flex-grow-1 -->
+
 				</article><!-- .comment-body -->
 
 	<?php
@@ -125,17 +170,6 @@ if (!function_exists('ignites_layout_option')) :
             return "col-lg-12 fullwidth-content";
         } else {
             return "col-lg-8";
-        }
-    }
-endif;
-
-if (!function_exists('ignites_render_sidebar')) :
-    function ignites_render_sidebar()
-    {
-        $side_layout = get_theme_mod("ignites_sidebar_settings", "right-sidebar");
-
-        if ($side_layout !== 'no-sidebar') {
-            get_sidebar('widget-sidebar');
         }
     }
 endif;

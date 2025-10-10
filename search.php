@@ -17,7 +17,7 @@ get_header();
 						get_sidebar('widget-sidebar');
 					}
 				?>
-                <div class="<?php ignites_layout_option();?>">
+                <div class="<?php echo esc_attr(ignites_layout_option()); ?>">
                     <div id="primary" class="content-area">
                         <main id="main" class="site-main">
                             <section id="primary" class="content-area">

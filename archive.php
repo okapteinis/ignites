@@ -12,7 +12,12 @@ get_header();
     <div class="main-content-section">
         <div class="container">
             <div class="row d-flex justify-content-center">
-				                <?php ignites_render_sidebar(); ?>
+				<?php
+                    $side_layout = get_theme_mod( 'ignites_sidebar_settings', 'right-sidebar' );
+                    if ( 'left-sidebar' === $side_layout ) {
+                        get_sidebar('widget-sidebar');
+                    }
+                ?>
 				                <div class="<?php echo esc_attr(ignites_layout_option()); ?>">
 				
                     <div id="primary" class="content-area">
@@ -46,7 +51,7 @@ get_header();
                     </div>
                 </div>
 				<?php 
-					if($side_layout == 'right-sidebar'){
+					if('right-sidebar' === $side_layout){
 						get_sidebar('widget-sidebar');
 					}
 				?>
