@@ -13,5 +13,7 @@
             "homepage": "https://ojars.kapteinis.lv"
         }
     ],
-    "require": {}
+    "require": {
+        "php": ">=8.4"
+    }
 }

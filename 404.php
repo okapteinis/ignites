@@ -12,13 +12,8 @@ get_header();
     <div class="main-content-section">
         <div class="container">
             <div class="row d-flex justify-content-center">
-                <?php 
-                    $side_layout =  get_theme_mod("ignites_sidebar_settings","right-sidebar");
-                    if($side_layout == 'left-sidebar'){
-                        get_sidebar('widget-sidebar');
-                    }
-                ?>
-                <div class="<?php ignites_layout_option();?>">
+                <?php ignites_render_sidebar(); ?>
+                <div class="<?php echo esc_attr(ignites_layout_option()); ?>">
                     <div id="primary" class="content-area">
                         <main id="main" class="site-main">
                             <section class="error-404 not-found">

@@ -116,18 +116,31 @@ endif;
  */
 
 if (!function_exists('ignites_layout_option')) :
-	function ignites_layout_option()
-	{
+    function ignites_layout_option()
+    {
 
-		$side_layout =  get_theme_mod("ignites_sidebar_settings");
+        $side_layout = get_theme_mod("ignites_sidebar_settings");
 
-		if ($side_layout == 'no-sidebar') {
-			echo esc_html($layout_class = "col-lg-12 fullwidth-content");
-		} else {
-			echo esc_html($layout_class = "col-lg-8");
-		}
-	}
+        if ($side_layout == 'no-sidebar') {
+            return "col-lg-12 fullwidth-content";
+        } else {
+            return "col-lg-8";
+        }
+    }
 endif;
+
+if (!function_exists('ignites_render_sidebar')) :
+    function ignites_render_sidebar()
+    {
+        $side_layout = get_theme_mod("ignites_sidebar_settings", "right-sidebar");
+
+        if ($side_layout !== 'no-sidebar') {
+            get_sidebar('widget-sidebar');
+        }
+    }
+endif;
+
+
 
 
 /**

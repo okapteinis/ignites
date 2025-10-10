@@ -83,7 +83,7 @@ html {
 body {
     background-color: #f4f7f6;
     color: #8c8d9e;
-    font-family: "Open Sans", sans-serif;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
     font-size: 14px;
     font-weight: 400;
     line-height: 1.625em;
@@ -163,7 +163,7 @@ h3,
 h4,
 h5,
 h6 {
-    font-family: "Open Sans", sans-serif;
+    font-family: inherit;
     color: #222222;
     line-height: 1.2em !important;
     margin-bottom: 0;
@@ -179,7 +179,7 @@ h6 {
 .h6 {
     margin-bottom: 0;
     margin-top: 0;
-    font-family: "Open Sans", sans-serif;
+    font-family: inherit;
     font-weight: 600;
     color: #222222;
 }
@@ -581,8 +581,8 @@ input,
 select,
 optgroup,
 textarea {
-    color: #404040;
-    font-family: "Open Sans", sans-serif;
+    color: inherit;
+    font-family: inherit;
     font-size: 16px;
     font-size: 1rem;
     line-height: 1.5;
@@ -1362,8 +1362,7 @@ ul.primary-menu li li:hover>ul {
 }
 
 .haschildren {
-    display: inline-block !important;
-    margin-bottom: 0px;
+    margin-bottom: 0;
 }
 
 .haschildren .children {
@@ -1699,6 +1698,7 @@ ul.primary-menu li li:hover>ul {
     .author-img,
     .author-details {
         display: block;
+        vertical-align: initial;
         padding-left: 0px !important;
     }
 }
@@ -1937,11 +1937,14 @@ object {
 ## Galleries
 --------------------------------------------------------------*/
 .gallery {
+    display: flex;
+    flex-wrap: wrap;
     margin-bottom: 1.5em;
 }
 
 .gallery-item {
-    display: inline-block;
+    display: block;
+    flex: 1;
     text-align: center;
     vertical-align: top;
     width: 100%;

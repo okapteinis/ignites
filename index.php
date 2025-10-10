@@ -25,13 +25,14 @@ if (function_exists('wp_body_open')) {
 <div class="main-content-section">
 	<div class="container">
 		<div class="row d-flex justify-content-center">
-			<?php 
-				$side_layout =  get_theme_mod("ignites_sidebar_settings","right-sidebar");
-				if($side_layout == 'left-sidebar'){
-					get_sidebar('widget-sidebar');
+			<?php
+				$side_layout = get_theme_mod( 'ignites_sidebar_settings', 'right-sidebar' );
+				if ( $side_layout == 'left-sidebar' ) {
+					get_sidebar( 'widget-sidebar' );
 				}
 			?>
-			<div class="<?php ignites_layout_option(); ?>">
+			<div class="<?php echo esc_attr( ignites_layout_option() ); ?>">
+			
 				<div id="primary" class="content-area">
 					<main id="main" class="site-main">
 
@@ -77,9 +78,9 @@ if (function_exists('wp_body_open')) {
 					</main><!-- #main -->
 				</div>
 			</div>
-			<?php 
-				if($side_layout == 'right-sidebar'){
-					get_sidebar('widget-sidebar');
+			<?php
+				if ( $side_layout == 'right-sidebar' ) {
+					get_sidebar( 'widget-sidebar' );
 				}
 			?>
 

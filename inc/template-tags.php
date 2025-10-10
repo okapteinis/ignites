@@ -72,25 +72,32 @@ if ( ! function_exists( 'ignites_entry_footer' ) ) :
 			}
 		}
 
-		$user_details = '';
+		$user_details_html = '';
 		if ( ! is_single() && ! post_password_required() && ( comments_open() || get_comments_number() ) ) {
-			$user_details .= '<span class="comments-link">';
-			ob_start();
-			comments_popup_link( sprintf(
-				wp_kses(
-					/* translators: %s: post title */
-					__( 'Leave a Comment<span class="screen-reader-text"> on %s</span>', 'ignites' ),
-					array( 'span' => array( 'class' => array() ) )
-				),
-				get_the_title()
-			) );
-			$user_details .= ob_get_clean();
-			$user_details .= '</span>';
+			$user_details_html .= '<span class="comments-link">';
+			$user_details_html .= wp_kses_post(
+				get_comments_popup_link(
+					sprintf(
+						/* translators: %s: post title */
+						__( 'Leave a Comment<span class="screen-reader-text"> on %s</span>', 'ignites' ),
+						get_the_title()
+					),
+					__( '1 Comment', 'ignites' ),
+					__( '% Comments', 'ignites' ),
+					'', // CSS class
+					sprintf(
+						/* translators: %s: post title */
+						__( 'Comments are off for %s', 'ignites' ),
+						get_the_title()
+					)
+				)
+			);
+			$user_details_html .= '</span>';
 		}
 
 		$edit_link = get_edit_post_link();
 		if ( $edit_link ) {
-			$user_details .= '<span class="edit-link"><a href="' . esc_url( $edit_link ) . '">' .
+			$user_details_html .= '<span class="edit-link"><a href="' . esc_url( $edit_link ) . '">' .
 				sprintf(
 					wp_kses(
 						/* translators: %s: Name of current post. Only visible to screen readers */
@@ -101,8 +108,8 @@ if ( ! function_exists( 'ignites_entry_footer' ) ) :
 				) . '</a></span>';
 		}
 
-		if ( $user_details ) {
-			$footer_meta .= '<div class="user-details">' . $user_details . '</div>';
+		if ( $user_details_html ) {
+			$footer_meta .= '<div class="user-details">' . $user_details_html . '</div>';
 		}
 
 		echo wp_kses_post( $footer_meta );
@@ -122,7 +129,7 @@ if ( ! function_exists( 'ignites_post_thumbnail' ) ) :
 		}
 
 		if ( is_singular() ) :
-			?>
+			?> 
 
 			<div class="post-thumbnail">
 				<?php the_post_thumbnail('ignites-landscape'); ?>
