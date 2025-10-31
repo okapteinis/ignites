@@ -4,11 +4,11 @@ $ignites_theme_info = wp_get_theme();
 define( 'IGNITES_THEME_VERSION', ( WP_DEBUG ) ? time() : $ignites_theme_info->get( 'Version' ) );
 
 function ignites_enqueue_scripts() {
-	wp_enqueue_style('bootstrap', get_template_directory_uri().'/assets/css/bootstrap.min.css',null,IGNITES_THEME_VERSION);
-	wp_enqueue_style('ignites-main-css', get_template_directory_uri().'/assets/css/main.css',null,IGNITES_THEME_VERSION);
-	wp_enqueue_style('ignites-google-font-css', '//fonts.googleapis.com/css?family=Open+Sans:300,400,600,700,800',null,IGNITES_THEME_VERSION);
-	wp_enqueue_style('linearicons', get_template_directory_uri().'/assets/css/linearicons.css',null,IGNITES_THEME_VERSION);
-	wp_enqueue_style('ignites-editor-css', get_template_directory_uri().'/assets/css/style-editor.css',null,IGNITES_THEME_VERSION);
+	wp_enqueue_style('bootstrap', get_template_directory_uri().'/assets/css/bootstrap.min.css',[],IGNITES_THEME_VERSION);
+	wp_enqueue_style('ignites-main-css', get_template_directory_uri().'/assets/css/main.css',[],IGNITES_THEME_VERSION);
+	wp_enqueue_style('ignites-google-font-css', '//fonts.googleapis.com/css?family=Open+Sans:300,400,600,700,800',[],IGNITES_THEME_VERSION);
+	wp_enqueue_style('linearicons', get_template_directory_uri().'/assets/css/linearicons.css',[],IGNITES_THEME_VERSION);
+	wp_enqueue_style('ignites-editor-css', get_template_directory_uri().'/assets/css/style-editor.css',[],IGNITES_THEME_VERSION);
 	wp_enqueue_style('ignites-style', get_stylesheet_uri());
 
 	wp_enqueue_script('popper',get_template_directory_uri().'/assets/js/popper.min.js', array('jquery'),IGNITES_THEME_VERSION,true);
@@ -24,6 +24,6 @@ function ignites_enqueue_scripts() {
 add_action( 'wp_enqueue_scripts', 'ignites_enqueue_scripts' );
 
 function ignites_block_editor_styles() {
-	wp_enqueue_style( 'ignites-block-editor-styles', get_template_directory_uri() . '/block-editor.css', null,IGNITES_THEME_VERSION);
+	wp_enqueue_style( 'ignites-block-editor-styles', get_template_directory_uri() . '/block-editor.css', [],IGNITES_THEME_VERSION);
 }
 add_action( 'enqueue_block_editor_assets', 'ignites_block_editor_styles' );

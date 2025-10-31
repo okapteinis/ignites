@@ -38,8 +38,8 @@ if (!function_exists('ignites_post_comment')) :
 			<li id="comment-<?php comment_ID(); ?>" <?php comment_class('media'); ?>>
 
 				<article id="div-comment-<?php comment_ID(); ?>" class="comment-body media mb-5">
-					<a class="pull-left" href="#">
-						<?php if (0 != $args['avatar_size']) echo get_avatar($comment, $args['avatar_size']); ?>
+					<a class="float-start" href="#">
+						<?php if (0 !== $args['avatar_size']) echo get_avatar($comment, $args['avatar_size']); ?>
 					</a>
 
 					<div class="media-body">
@@ -74,7 +74,7 @@ if (!function_exists('ignites_post_comment')) :
 								); ?>
 							</div>
 
-							<?php if ('0' == $comment->comment_approved) : ?>
+							<?php if ('0' === $comment->comment_approved) : ?>
 								<p class="comment-awaiting-moderation"><?php esc_attr('Your comment is awaiting moderation.', 'ignites'); ?></p>
 							<?php endif; ?>
 
@@ -92,8 +92,8 @@ if (!function_exists('ignites_post_comment')) :
 
 			<li id="comment-<?php comment_ID(); ?>" <?php comment_class(empty($args['has_children']) ? '' : 'parent'); ?>>
 				<article id="div-comment-<?php comment_ID(); ?>" class="comment-body media mb-5">
-					<a class="pull-left" href="#">
-						<?php if (0 != $args['avatar_size']) echo get_avatar($comment, $args['avatar_size']); ?>
+					<a class="float-start" href="#">
+						<?php if (0 !== $args['avatar_size']) echo get_avatar($comment, $args['avatar_size']); ?>
 					</a>
 
 					<div class="media-body">
@@ -127,7 +127,7 @@ if (!function_exists('ignites_post_comment')) :
 								); ?>
 							</div>
 
-							<?php if ('0' == $comment->comment_approved) : ?>
+							<?php if ('0' === $comment->comment_approved) : ?>
 								<p class="comment-awaiting-moderation"><?php esc_html_e('Your comment is awaiting moderation.', 'ignites'); ?></p>
 							<?php endif; ?>
 
