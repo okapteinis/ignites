@@ -24,6 +24,17 @@ function ignites_enqueue_scripts() {
 }
 add_action( 'wp_enqueue_scripts', 'ignites_enqueue_scripts' );
 
+/**
+ * Preload critical fonts for better performance
+ * Ensures Linearicons font loads immediately, especially important for private/incognito mode
+ *
+ * @since 1.0.0
+ */
+function ignites_preload_fonts() {
+	echo '<link rel="preload" href="' . esc_url( get_template_directory_uri() . '/assets/fonts/lnr-webfont.woff2' ) . '" as="font" type="font/woff2" crossorigin="anonymous">';
+}
+add_action( 'wp_head', 'ignites_preload_fonts', 1 );
+
 function ignites_block_editor_styles() {
 	wp_enqueue_style( 'ignites-block-editor-styles', get_template_directory_uri() . '/block-editor.css', [],IGNITES_THEME_VERSION);
 }
