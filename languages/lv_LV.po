@@ -1,19 +1,20 @@
-# Ignites WordPress Theme Translation Template
+# Ignites WordPress Theme - Latvian Translation
 # Copyright (C) 2025 DopeTheme
 # This file is distributed under the same license as the Ignites theme.
+# Ojārs Kapteinis <ojars@kapteinis.lv>, 2025.
 msgid ""
 msgstr ""
 "Project-Id-Version: Ignites 1.0.0\n"
 "Report-Msgid-Bugs-To: https://dopetheme.com\n"
 "POT-Creation-Date: 2025-11-11 14:00+0200\n"
-"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
-"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
-"Language-Team: LANGUAGE <LL@li.org>\n"
-"Language: en\n"
+"PO-Revision-Date: 2025-11-11 14:15+0200\n"
+"Last-Translator: Ojārs Kapteinis <ojars@kapteinis.lv>\n"
+"Language-Team: Latvian\n"
+"Language: lv_LV\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n != 0 ? 1 : 2);\n"
 "X-Generator: Manual\n"
 "X-Poedit-Basepath: ..\n"
 "X-Poedit-KeywordsList: __;_e;_n:1,2;_x:1,2c;_ex:1,2c;_nx:4c,1,2;esc_attr__;"
@@ -24,173 +25,180 @@ msgstr ""
 
 #: header.php:25
 msgid "Skip to content"
-msgstr ""
+msgstr "Pāriet uz saturu"
 
 #: searchform.php:3
 msgctxt "placeholder"
 msgid "Search &hellip;"
-msgstr ""
+msgstr "Meklēt &hellip;"
 
 #: searchform.php:5
 msgid "Search"
-msgstr ""
+msgstr "Meklēt"
 
 #: comments.php:37
 msgctxt "comments title"
 msgid "One thought on &ldquo;%s&rdquo;"
-msgstr ""
+msgstr "Viena doma par &ldquo;%s&rdquo;"
 
 #: comments.php:42 comments.php:43
 #, php-format
 msgctxt "comments title"
 msgid "%1$s thought on &ldquo;%2$s&rdquo;"
 msgid_plural "%1$s thoughts on &ldquo;%2$s&rdquo;"
-msgstr[0] ""
-msgstr[1] ""
+msgstr[0] "%1$s doma par &ldquo;%2$s&rdquo;"
+msgstr[1] "%1$s domas par &ldquo;%2$s&rdquo;"
+msgstr[2] "%1$s domu par &ldquo;%2$s&rdquo;"
 
 #: comments.php:58 comments.php:76
 msgid "Comment navigation"
-msgstr ""
+msgstr "Komentāru navigācija"
 
 #: comments.php:61 comments.php:79
 msgid "<< Older Comments"
-msgstr ""
+msgstr "<< Vecāki komentāri"
 
 #: comments.php:62 comments.php:80
 msgid "Newer Comments >>"
-msgstr ""
+msgstr "Jaunāki komentāri >>"
 
 #: comments.php:93
 msgid "Comments are closed."
-msgstr ""
+msgstr "Komentāri ir slēgti."
 
 #: search.php:30
 #, php-format
 msgid "Search Results for: %s"
-msgstr ""
+msgstr "Meklēšanas rezultāti: %s"
 
 #: 404.php:26
 msgid "Oops! That page can&rsquo;t be found."
-msgstr ""
+msgstr "Atvainojiet! Šī lapa netika atrasta."
 
 #: 404.php:29
 msgid ""
 "It looks like nothing was found at this location. Maybe try one of the "
 "links below or a search?"
 msgstr ""
+"Šķiet, ka šajā vietā nekas netika atrasts. Varbūt pamēģiniet kādu no "
+"saaitēm zemāk vai meklēšanu?"
 
 #: single.php:62
 msgid "Previous post"
-msgstr ""
+msgstr "Iepriekšējais ieraksts"
 
 #: single.php:71
 msgid "Next post"
-msgstr ""
+msgstr "Nākamais ieraksts"
 
 #: footer.php:25
 msgid "Copyright &copy;"
-msgstr ""
+msgstr "Autortiesības &copy;"
 
 #: footer.php:27
 msgid "| <a href=\"//dopetheme.com\">DopeTheme</a>"
-msgstr ""
+msgstr "| <a href=\"//dopetheme.com\">DopeTheme</a>"
 
 #: functions.php:26
 msgid "Primary Menu"
-msgstr ""
+msgstr "Galvenā izvēlne"
 
 #: inc/ignites_widgets.php:6
 msgid "Sidebar"
-msgstr ""
+msgstr "Sānjosla"
 
 #: inc/ignites_widgets.php:8
 msgid "Add widgets here."
-msgstr ""
+msgstr "Pievienojiet logrīkus šeit."
 
 #: inc/template-tags.php:60
 msgid "Leave a Comment<span class=\"screen-reader-text\"> on %s</span>"
-msgstr ""
+msgstr "Atstājiet komentāru<span class=\"screen-reader-text\"> par %s</span>"
 
 #: inc/template-tags.php:77 template-parts/content-page.php:42
 #, php-format
 msgid "Edit <span class=\"screen-reader-text\">%s</span>"
-msgstr ""
+msgstr "Rediģēt <span class=\"screen-reader-text\">%s</span>"
 
 #: inc/custom-functions.php:57 inc/custom-functions.php:110
 #, php-format
 msgctxt "1: date, 2: time"
 msgid "%1$s at %2$s"
-msgstr ""
+msgstr "%1$s plkst. %2$s"
 
 #: inc/custom-functions.php:60 inc/custom-functions.php:113
 msgid "<span style=\"margin-left: 5px;\" class=\"lnr lnr-pencil\"></span> Edit"
-msgstr ""
+msgstr "<span style=\"margin-left: 5px;\" class=\"lnr lnr-pencil\"></span> Rediģēt"
 
 #: inc/custom-functions.php:131
 msgid "Your comment is awaiting moderation."
-msgstr ""
+msgstr "Jūsu komentārs gaida moderāciju."
 
 #: inc/customizer/customizer.php:28
 msgid "Header Background Color"
-msgstr ""
+msgstr "Galvenes fona krāsa"
 
 #: inc/customizer/customizer.php:37
 msgid "Sidebar"
-msgstr ""
+msgstr "Sānjosla"
 
 #: inc/customizer/customizer.php:50
 msgid "Sidebar Layout"
-msgstr ""
+msgstr "Sānjoslas izkārtojums"
 
 #: inc/customizer/customizer.php:52
 msgid "No Sidebar"
-msgstr ""
+msgstr "Bez sānjoslas"
 
 #: inc/customizer/customizer.php:53
 msgid "Left Sidebar"
-msgstr ""
+msgstr "Kreisā sānjosla"
 
 #: inc/customizer/customizer.php:54
 msgid "Right Sidebar"
-msgstr ""
+msgstr "Labā sānjosla"
 
 #: inc/customizer/customizer.php:70
 msgid "Footer"
-msgstr ""
+msgstr "Kājene"
 
 #: inc/customizer/customizer.php:81
 msgid "Footer Copyright Text"
-msgstr ""
+msgstr "Kājenes autortiesību teksts"
 
 #: template-parts/content.php:17
 msgid ", "
-msgstr ""
+msgstr ", "
 
 #: template-parts/content.php:43 template-parts/content-search.php:43
 msgid "Continue reading<span class=\"screen-reader-text\"> \"%s\"</span>"
-msgstr ""
+msgstr "Turpināt lasīt<span class=\"screen-reader-text\"> \"%s\"</span>"
 
 #: template-parts/content.php:56 template-parts/content-page.php:32
 msgid "Pages:"
-msgstr ""
+msgstr "Lapas:"
 
 #: template-parts/content-none.php:14
 msgid "Nothing Found"
-msgstr ""
+msgstr "Nekas nav atrasts"
 
 #: template-parts/content-none.php:24
 #, php-format
 msgid "Ready to publish your first post? <a href=\"%1$s\">Get started here</a>."
-msgstr ""
+msgstr "Gatavs publicēt savu pirmo ierakstu? <a href=\"%1$s\">Sāciet šeit</a>."
 
 #: template-parts/content-none.php:37
 msgid ""
 "Sorry, but nothing matched your search terms. Please try again with some "
 "different keywords."
 msgstr ""
+"Atvainojiet, bet jūsu meklēšanas vaicājumam nekas neatbilda. Lūdzu, "
+"mēģiniet vēlreiz ar citiem atslēgvārdiem."
 
 #: template-parts/content-none.php:44
 msgid ""
 "It seems we can&rsquo;t find what you&rsquo;re looking for. Perhaps "
 "searching can help."
 msgstr ""
+"Šķiet, ka mēs nevaram atrast to, ko jūs meklējat. Varbūt meklēšana var "
+"palīdzēt."
