@@ -1,0 +1,66 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: Ignites 1.0.10.1\n"
+"POT-Creation-Date: 2019-01-20 02:23+0600\n"
+"PO-Revision-Date: 2025-11-17 21:15+0000\n"
+"Last-Translator: Claude AI\n"
+"Language-Team: Latvian\n"
+"Language: lv_LV\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n != 0 ? 1 : 2);\n"
+"X-Generator: Claude AI\n"
+"X-Poedit-Basepath: ..\n"
+"X-Poedit-KeywordsList: __;_e\n"
+"X-Poedit-SearchPath-0: .\n"
+"X-Poedit-SearchPathExcluded-0: assets\n"
+
+#: footer.php:24
+msgid "Copyright &copy; 2018 | Dope Theme"
+msgstr "Autortiesības &copy; 2018 | Dope Theme"
+
+#: inc/custom-functions.php:48 inc/custom-functions.php:98
+#, php-format
+msgid "%s <span class=\"says\">says:</span>"
+msgstr "%s <span class=\"says\">saka:</span>"
+
+#: inc/custom-functions.php:55 inc/custom-functions.php:105
+msgid "<span style=\"margin-left: 5px;\" class=\"lnr lnr-pencil\"></span> Edit"
+msgstr "<span style=\"margin-left: 5px;\" class=\"lnr lnr-pencil\"></span> Rediģēt"
+
+#: inc/custom-functions.php:72 inc/custom-functions.php:122
+msgid "Your comment is awaiting moderation."
+msgstr "Jūsu komentārs gaida moderāciju."
+
+#: inc/customizer/customizer.php:30
+msgid "Header Background Color"
+msgstr "Galvenes fona krāsa"
+
+#: inc/customizer/customizer.php:39
+msgid "Footer"
+msgstr "Kājene"
+
+#: inc/customizer/customizer.php:51
+msgid "Footer Copyright Text"
+msgstr "Kājenes autortiesību teksts"
+
+#: inc/template-tags.php:86
+#, php-format
+msgid "Leave a Comment<span class=\"screen-reader-text\"> on %s</span>"
+msgstr "Atstāt komentāru<span class=\"screen-reader-text\"> par %s</span>"
+
+#: inc/template-tags.php:103 template-parts/content-page.php:42
+#, php-format
+msgid "Edit <span class=\"screen-reader-text\">%s</span>"
+msgstr "Rediģēt <span class=\"screen-reader-text\">%s</span>"
+
+#: template-parts/content-none.php:24
+#, php-format
+msgid "Ready to publish your first post? <a href=\"%1$s\">Get started here</a>."
+msgstr "Vai esat gatavs publicēt savu pirmo ierakstu? <a href=\"%1$s\">Sāciet šeit</a>."
+
+#: template-parts/content-search.php:43 template-parts/content.php:43
+#, php-format
+msgid "Continue reading<span class=\"screen-reader-text\"> \"%s\"</span>"
+msgstr "Turpināt lasīt<span class=\"screen-reader-text\"> \"%s\"</span>"
