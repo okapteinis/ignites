@@ -3,8 +3,8 @@
 	if ( ! function_exists( 'ignites_setup' ) ) :
 		function ignites_setup() {
 
-	        // Make theme available for translation.
-			load_theme_textdomain( 'ignites', get_template_directory() . '/languages' );
+	        // Theme translations are loaded separately on 'init' hook for WordPress 6.7+ compatibility
+			// See ignites_load_textdomain() function below
 
 			// Add default posts and comments RSS feed links to head.
 			add_theme_support( 'automatic-feed-links' );
@@ -61,6 +61,44 @@
 		}
 	endif;
 	add_action( 'after_setup_theme', 'ignites_setup' );
+
+	/**
+	 * Load theme textdomain for translations.
+	 *
+	 * WordPress 6.7+ requires translations to be loaded on 'init' hook instead of 'after_setup_theme'
+	 * to ensure proper loading of translation files, especially for non-English locales.
+	 *
+	 * @since 1.0.11
+	 */
+	if ( ! function_exists( 'ignites_load_textdomain' ) ) :
+		function ignites_load_textdomain() {
+			$locale = get_locale();
+			$languages_path = get_template_directory() . '/languages';
+
+			// Debug logging (can be enabled via WP_DEBUG_LOG)
+			if ( defined( 'WP_DEBUG_LOG' ) && WP_DEBUG_LOG ) {
+				error_log( 'Ignites Theme - Current locale: ' . $locale );
+				error_log( 'Ignites Theme - Languages path: ' . $languages_path );
+
+				// Check if translation files exist
+				$mo_file = $languages_path . '/lv_LV.mo';
+				if ( file_exists( $mo_file ) ) {
+					error_log( 'Ignites Theme - Translation file exists: ' . $mo_file );
+				} else {
+					error_log( 'Ignites Theme - Translation file NOT found: ' . $mo_file );
+				}
+			}
+
+			// Load theme textdomain
+			$loaded = load_theme_textdomain( 'ignites', $languages_path );
+
+			// Debug logging
+			if ( defined( 'WP_DEBUG_LOG' ) && WP_DEBUG_LOG ) {
+				error_log( 'Ignites Theme - Translation loaded: ' . ( $loaded ? 'YES' : 'NO' ) );
+			}
+		}
+	endif;
+	add_action( 'init', 'ignites_load_textdomain', 1 );
 
 	/**
 	 * Set the content width in pixels, based on the theme's design and stylesheet.

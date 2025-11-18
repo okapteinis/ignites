@@ -1,10 +1,10 @@
 ﻿=== Ignites ===
 Contributors: fahem
 Tags: two-columns , three-columns , left-sidebar , custom-background, custom-logo, custom-menu, featured-images, threaded-comments, translation-ready , editor-style, sticky-post, theme-options
-Requires at least: 4.7
-Tested up to: 5.8
-Requires PHP: 5.2
-Stable tag: 1.0.10.1
+Requires at least: 5.0
+Tested up to: 6.7
+Requires PHP: 7.4
+Stable tag: 1.0.11
 License: GNU General Public License v2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 Copyright: Fahem Ahmed 2020.
@@ -45,6 +45,15 @@ Menus
 The theme has one menus. The menu supports 3 levels.
 
 == Changelog ==
+
+= 1.0.11 - October 31 2025 =
+* PHP 8.4 compatibility improvements
+* Fixed deprecated WP_Customize_Color_Control class
+* Replaced null parameters with empty arrays for WordPress enqueue functions
+* Updated comparison operators to strict equality (=== and !==)
+* Updated Bootstrap 3 classes to Bootstrap 4 (pull-left to float-start)
+* Minimum PHP version updated to 7.4
+* Tested with WordPress 6.7
 
 = 1.0.10.1- July 24 2021 =
 * Fixed sidebar issue after install the theme.

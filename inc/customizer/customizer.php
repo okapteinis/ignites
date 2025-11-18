@@ -23,15 +23,13 @@ function ignites_customizer_option( $wp_customize ) {
 	);
 
 	$wp_customize->add_control(
-		new WP_Customize_Color_Control(
-			$wp_customize,
-			'bg_color',
-			array(
-				'label'      => __( 'Header Background Color', 'ignites' ),
-				'section'    => 'colors',
-				'settings'   => 'header_bg_color',
-				'priority'   =>'2'
-			)
+		'bg_color',
+		array(
+			'label'      => __( 'Header Background Color', 'ignites' ),
+			'section'    => 'colors',
+			'settings'   => 'header_bg_color',
+			'type'       => 'color',
+			'priority'   => '2'
 		)
 	);
 

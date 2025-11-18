@@ -58,8 +58,8 @@ $ignites_comments_number = get_comments_number();
                 <h2 class="screen-reader-text"><?php esc_html_e( 'Comment navigation', 'ignites' ); ?></h2>
                 <div class="navigation post-navigation container comment-navigation">
                     <div class="row">
-                        <div class="nav-previous col-md-6 text-left"><?php previous_comments_link( esc_html__( '<< Older Comments', 'ignites' ) ); ?></div>
-                        <div class="nav-next col-md-6 text-right"><?php next_comments_link( esc_html__( 'Newer Comments >>', 'ignites' ) ); ?></div>
+                        <div class="nav-previous col-md-6 text-start"><?php previous_comments_link( esc_html__( '<< Older Comments', 'ignites' ) ); ?></div>
+                        <div class="nav-next col-md-6 text-end"><?php next_comments_link( esc_html__( 'Newer Comments >>', 'ignites' ) ); ?></div>
                     </div>
                 </div><!-- .nav-links -->
             </nav><!-- #comment-nav-above -->
@@ -76,8 +76,8 @@ $ignites_comments_number = get_comments_number();
                 <h2 class="screen-reader-text"><?php esc_html_e( 'Comment navigation', 'ignites' ); ?></h2>
                 <div class="navigation post-navigation container comment-navigation">
                     <div class="row">
-                        <div class="nav-previous col-md-6 text-left"><?php previous_comments_link( esc_html__( '<< Older Comments', 'ignites' ) ); ?></div>
-                        <div class="nav-next col-md-6 text-right"><?php next_comments_link( esc_html__( 'Newer Comments >>', 'ignites' ) ); ?></div>
+                        <div class="nav-previous col-md-6 text-start"><?php previous_comments_link( esc_html__( '<< Older Comments', 'ignites' ) ); ?></div>
+                        <div class="nav-next col-md-6 text-end"><?php next_comments_link( esc_html__( 'Newer Comments >>', 'ignites' ) ); ?></div>
                     </div>
                 </div><!-- .nav-links -->
             </nav><!-- #comment-nav-below -->

@@ -58,7 +58,7 @@ get_header();
                             </div>
                             <div class="navigation post-navigation container">
                                 <div class="row">
-                                    <div class="nav-previous col-md-6 text-left">
+                                    <div class="nav-previous col-md-6 text-start">
                                         <a href="<?php echo $ignites_prev_link; ?>" class="nav-txt"> <?php esc_html_e('Previous post', 'ignites'); ?> </a>
                                         <?php
                                         if (!empty($ignites_prev_post)) {
@@ -67,7 +67,7 @@ get_header();
                                         }
                                         ?>
                                     </div>
-                                    <div class="nav-next col-md-6 text-right">
+                                    <div class="nav-next col-md-6 text-end">
                                         <a href="<?php echo $ignites_next_link; ?>" class="nav-txt"> <?php esc_html_e('Next post', 'ignites'); ?> </a>
                                         <?php
                                         if (!empty($ignites_next_post)) {
