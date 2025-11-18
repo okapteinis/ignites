@@ -40,7 +40,7 @@ Co-authored-by: Claude <noreply@anthropic.com>
 - Use strict type comparisons (`===`, `!==`) over loose comparisons
 - Use type hints where appropriate (PHP 7.4+)
 - Handle null values properly (no null deprecation warnings)
-- Use array syntax `[]` instead of deprecated `null` in WordPress functions
+- Use `[]` for array-type parameters to avoid PHP 8.1+ deprecation notices
 
 ### Text Domain and Translations
 - **Text Domain:** `ignites`
@@ -69,7 +69,6 @@ Co-authored-by: Claude <noreply@anthropic.com>
   - `esc_attr()` - for HTML attributes
   - `esc_url()` - for URLs
   - `esc_js()` - for JavaScript
-  - `wp_kses_post()` - for allowed HTML tags
 
 #### 3. SQL Injection Prevention
 - **NEVER** use direct SQL queries with user input
@@ -184,14 +183,14 @@ All PHP files MUST include header:
 
 - **Development Branch:** `nightly`
 - **Stable Branch:** `master`
-- **Feature Branches:** `claude/feature-name-{session-id}`
+- **Feature Branches:** `claude/feature-name-{unique-id}` (e.g., `claude/new-header-a1b2c3d4`)
 
 #### Branch Rules:
 1. All development happens on `nightly`
 2. Feature branches merge into `nightly`
 3. Only tested, stable code goes to `master`
 4. Never push directly to `master` without review
-5. Feature branch names MUST start with `claude/` and end with session ID
+5. Feature branch names MUST start with `claude/` and include a unique, descriptive identifier
 
 ### Commit Guidelines
 
