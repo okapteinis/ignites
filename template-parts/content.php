@@ -1,0 +1,70 @@
+<?php
+/**
+ * Ignites Child — content template part (post card / single body).
+ *
+ * @package Ignites_Child
+ */
+
+?>
+<article id="post-<?php the_ID(); ?>" <?php post_class(); ?>>
+	<?php ignites_post_thumbnail(); ?>
+	<div class="wrap-content">
+		<div class="entry-category">
+			<?php echo wp_kses_post( get_the_category_list( __( ', ', 'ignites-child' ) ) ); ?>
+		</div>
+
+		<header class="entry-header">
+			<?php
+			if ( is_singular() ) :
+				the_title( '<h1 class="entry-title">', '</h1>' );
+			else :
+				the_title( '<h2 class="entry-title"><a href="' . esc_url( get_permalink() ) . '" rel="bookmark">', '</a></h2>' );
+			endif;
+			?>
+		</header>
+
+		<div class="entry-content">
+			<?php
+			if ( is_home() || is_front_page() || is_search() || is_archive() ) :
+				?>
+				<p class="m-0 entry-excerpt"><?php the_excerpt(); ?></p>
+				<?php
+			else :
+				the_content(
+					sprintf(
+						wp_kses(
+							/* translators: %s: Name of current post. Only visible to screen readers */
+							__( 'Continue reading<span class="screen-reader-text"> "%s"</span>', 'ignites-child' ),
+							array( 'span' => array( 'class' => array() ) )
+						),
+						get_the_title()
+					)
+				);
+				wp_link_pages(
+					array(
+						'before' => '<div class="page-links">' . esc_html__( 'Pages:', 'ignites-child' ),
+						'after'  => '</div>',
+					)
+				);
+			endif;
+			?>
+		</div>
+
+		<footer class="entry-footer">
+			<span class="post-date"><?php echo esc_html( ignites_child_post_date() ); ?></span>
+			<?php
+			$ignites_child_rt = ignites_child_reading_time();
+			if ( $ignites_child_rt ) :
+				?>
+				<span class="reading-time"><?php echo esc_html( $ignites_child_rt ); ?></span>
+				<?php
+			endif;
+
+			$ignites_child_tags = get_the_tag_list( '<span class="tags-links">', '', '</span>' );
+			if ( $ignites_child_tags ) {
+				echo wp_kses_post( $ignites_child_tags );
+			}
+			?>
+		</footer>
+	</div>
+</article>
