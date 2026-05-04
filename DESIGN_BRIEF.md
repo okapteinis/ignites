@@ -1,5 +1,7 @@
 # Task: Create `ignites-child` — Modern Redesign of ojars.kapteinis.lv
 
+> **Provenance:** Brief authored by **Perplexity** (2026-05-04). Theme implemented by a **Claude Design** session from this brief — output zipped as `ignites-child.zip` and committed verbatim to this `alpha` branch by Claude Code on 2026-05-05. Reads in Perplexity's voice; the implementation commits are Claude's.
+
 ## Context & Goal
 
 You are building a **ClassicPress child theme** called `ignites-child` for the personal blog at `ojars.kapteinis.lv`. The parent theme is **Ignites** (Bootstrap 5, PHP 8.4 compatible), hosted at `https://github.com/okapteinis/ignites/tree/nightly`.
