@@ -5,7 +5,7 @@ Description:  Modern editorial redesign of the Ignites theme for ojars.kapteinis
 Author:       Ojārs Kapteinis
 Author URI:   https://ojars.kapteinis.lv
 Template:     ignites-nightly
-Version:      1.0.6
+Version:      1.0.7
 License:      GPL-2.0-or-later
 License URI:  http://www.gnu.org/licenses/gpl-2.0.html
 Text Domain:  ignites-child
@@ -1086,22 +1086,29 @@ ul.primary-menu li:hover > a {
    3.13 Responsive
    ========================================================================== */
 
-/* Mobile drawer background — parent hardcodes background: #f4f7f6 on
-   .main-navigation under @media (max-width: 991px), which doesn't switch
-   with dark mode and looks transparent over our dark page. Override with
-   the surface token + a backdrop blur so the slide-in drawer is opaque
-   and theme-aware on both modes.
-   Source: ignites-nightly/assets/css/main.css line 903 */
+/* Mobile drawer — parent hardcodes background: #f4f7f6 (light only) AND
+   max-width: calc(100% - 200px), which leaves a 200 px strip on the right
+   where the hamburger-X morph stays visible (= the duplicate-X bug).
+   Override both: full width covers the hamburger, surface token tracks
+   the theme, backdrop blur for a real drawer feel.
+   Source: ignites-nightly/assets/css/main.css lines 903 + 948 */
 @media (max-width: 991px) {
   .main-navigation {
     background: var(--color-surface);
     backdrop-filter: blur(8px);
     -webkit-backdrop-filter: blur(8px);
   }
+  .main-navigation.is-active {
+    width: 100%;
+    max-width: 100%;
+  }
 }
 
-/* Defensive mobile flex on single-post prev/next nav — keep them on
-   ONE row at narrow viewports, smaller font so both labels fit. */
+/* Defensive mobile flex on single-post prev/next nav.
+   Parent main.css line 1898 adds `.nav-previous { margin-bottom: 20px }`
+   under @media (max-width: 767px) — combined with our flex+align-center
+   that 20 px shifts prev down ~10 px relative to next, looking visually
+   stacked. Zero it out, keep both anchors on one row, smaller font. */
 @media (max-width: 767px) {
   .navigation.post-navigation {
     display: flex;
@@ -1115,6 +1122,7 @@ ul.primary-menu li:hover > a {
   .navigation.post-navigation a.nav-next {
     font-size: var(--text-sm);
     flex-shrink: 1;
+    margin: 0;
   }
 }
 
