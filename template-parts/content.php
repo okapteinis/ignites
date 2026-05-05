@@ -10,7 +10,10 @@
 	<?php ignites_post_thumbnail(); ?>
 	<div class="wrap-content">
 		<div class="entry-category">
-			<?php echo wp_kses_post( get_the_category_list( __( ', ', 'ignites-child' ) ) ); ?>
+			<?php
+			/* translators: separator between linked category names — kept as plain ", " */
+			echo wp_kses_post( get_the_category_list( _x( ', ', 'category list separator', 'ignites-child' ) ) );
+			?>
 		</div>
 
 		<header class="entry-header">

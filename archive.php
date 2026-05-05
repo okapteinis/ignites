@@ -27,40 +27,11 @@ get_header();
 								the_post();
 								$ignites_child_post_count++;
 
-								if ( 1 === $ignites_child_post_count ) :
-									?>
-									<article id="post-<?php the_ID(); ?>" <?php post_class( 'post-hero' ); ?>>
-										<?php ignites_post_thumbnail(); ?>
-										<div class="wrap-content">
-											<div class="entry-category">
-												<?php echo wp_kses_post( get_the_category_list( __( ', ', 'ignites-child' ) ) ); ?>
-											</div>
-											<header class="entry-header">
-												<h2 class="entry-title">
-													<a href="<?php the_permalink(); ?>" rel="bookmark"><?php the_title(); ?></a>
-												</h2>
-											</header>
-											<div class="entry-content">
-												<p class="entry-excerpt m-0"><?php echo wp_kses_post( get_the_excerpt() ); ?></p>
-											</div>
-											<footer class="entry-footer">
-												<span class="post-date"><?php echo esc_html( ignites_child_post_date() ); ?></span>
-												<?php $rt = ignites_child_reading_time(); if ( $rt ) : ?>
-													<span class="reading-time"><?php echo esc_html( $rt ); ?></span>
-												<?php endif; ?>
-												<?php
-												$tags = get_the_tag_list( '<span class="tags-links">', '', '</span>' );
-												if ( $tags ) {
-													echo wp_kses_post( $tags );
-												}
-												?>
-											</footer>
-										</div>
-									</article>
-									<?php
-								else :
+								if ( 1 === $ignites_child_post_count ) {
+									get_template_part( 'template-parts/content', 'hero' );
+								} else {
 									get_template_part( 'template-parts/content', get_post_type() );
-								endif;
+								}
 							endwhile;
 							?>
 

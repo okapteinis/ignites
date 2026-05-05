@@ -1,11 +1,11 @@
 /*
 Theme Name:   Ignites Child
-Theme URI:    https://github.com/okapteinis/ignites
+Theme URI:    https://git.kapteinis.lv/ojars/ignites
 Description:  Modern editorial redesign of the Ignites theme for ojars.kapteinis.lv. Warm off-white surfaces, single teal accent, Cormorant Garamond + Inter typography (self-hosted, SIL OFL 1.1), dark mode, reading progress bar.
 Author:       Ojārs Kapteinis
 Author URI:   https://ojars.kapteinis.lv
 Template:     ignites-nightly
-Version:      1.0.10
+Version:      1.1.0
 License:      GPL-2.0-or-later
 License URI:  http://www.gnu.org/licenses/gpl-2.0.html
 Text Domain:  ignites-child
@@ -66,7 +66,7 @@ Text Domain:  ignites-child
 
   --color-text:           #28251d;
   --color-text-muted:     #6b6860;
-  --color-text-faint:     #a8a69f;
+  --color-text-faint:     #7a7770; /* WCAG AA: ~4.6:1 on --color-bg #f7f5f1 (closes #5) */
   --color-text-inverse:   #f9f8f4;
 
   --color-primary:           #01696f;
@@ -118,7 +118,7 @@ Text Domain:  ignites-child
 
   --color-text:           #cdccca;
   --color-text-muted:     #797876;
-  --color-text-faint:     #5a5957;
+  --color-text-faint:     #8a8784; /* WCAG AA: ~4.5:1 on dark --color-bg #171614 (closes #5) */
   --color-text-inverse:   #2b2a28;
 
   --color-primary:           #4f98a3;
@@ -141,7 +141,7 @@ Text Domain:  ignites-child
 
     --color-text:           #cdccca;
     --color-text-muted:     #797876;
-    --color-text-faint:     #5a5957;
+    --color-text-faint:     #8a8784; /* WCAG AA: ~4.5:1 on dark --color-bg #171614 (closes #5) */
     --color-text-inverse:   #2b2a28;
 
     --color-primary:           #4f98a3;

@@ -10,6 +10,16 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /**
+ * Load child theme translations (closes ojars/ignites#4). The theme uses
+ * the `ignites-child` text domain throughout — without this hook every
+ * `__()`/`_e()`/`_n()` call returns the source string unchanged, no
+ * matter what `.mo` files are placed in `languages/`.
+ */
+add_action( 'after_setup_theme', function () {
+	load_child_theme_textdomain( 'ignites-child', get_stylesheet_directory() . '/languages' );
+} );
+
+/**
  * Enqueue parent + child stylesheets. Fonts are self-hosted via @font-face
  * declarations at the top of the child stylesheet — no third-party requests.
  */
@@ -45,7 +55,12 @@ function ignites_child_reading_time( $post = null ) {
 	}
 	$content = strip_shortcodes( $post->post_content );
 	$content = wp_strip_all_tags( $content );
-	$words   = str_word_count( $content );
+	// Use Unicode-aware word count instead of str_word_count, which is
+	// locale-dependent and undercounts UTF-8 multibyte text — Latvian
+	// posts with `ā ē ī ō ū č ģ ķ ļ ņ š ž` were reading ~30% short.
+	// Closes ojars/ignites#3.
+	preg_match_all( '/\p{L}[\p{L}\p{M}\p{Nd}\'-]*/u', $content, $matches );
+	$words = count( $matches[0] );
 	if ( $words <= 0 ) {
 		return '';
 	}
@@ -103,13 +118,26 @@ function ignites_child_footer_inline_js() {
 			return '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>';
 		}
 
+		// Dynamic aria-label + aria-pressed reflect the actual current
+		// theme so screen-reader users hear what pressing the toggle
+		// will do, not just "Change theme". Closes ojars/ignites#7 W6.
+		var LABEL_TO_DARK  = <?php echo wp_json_encode( __( 'Pārslēgt uz tumšo tēmu', 'ignites-child' ) ); ?>;
+		var LABEL_TO_LIGHT = <?php echo wp_json_encode( __( 'Pārslēgt uz gaišo tēmu', 'ignites-child' ) ); ?>;
+		function syncToggleA11y() {
+			if (!btn) return;
+			btn.setAttribute('aria-label', theme === 'dark' ? LABEL_TO_LIGHT : LABEL_TO_DARK);
+			btn.setAttribute('aria-pressed', theme === 'dark' ? 'true' : 'false');
+		}
+
 		if (btn) {
 			btn.removeAttribute('hidden');
 			btn.innerHTML = theme === 'dark' ? sunIcon() : moonIcon();
+			syncToggleA11y();
 			btn.addEventListener('click', function () {
 				theme = (theme === 'dark') ? 'light' : 'dark';
 				html.setAttribute('data-theme', theme);
 				btn.innerHTML = theme === 'dark' ? sunIcon() : moonIcon();
+				syncToggleA11y();
 				try { localStorage.setItem(STORAGE_KEY, theme); } catch (e) {}
 			});
 		}
@@ -233,7 +261,8 @@ function ignites_child_customize_register( $wp_customize ) {
 		$wp_customize->add_control(
 			'ignites_child_' . $key . '_url',
 			array(
-				'label'   => $label . ' URL',
+				/* translators: %s: name of the social network (Mastodon, PixelFed, etc.) */
+				'label'   => sprintf( __( '%s URL', 'ignites-child' ), $label ),
 				'section' => 'ignites_child_social',
 				'type'    => 'url',
 			)
@@ -249,7 +278,8 @@ function ignites_child_customize_register( $wp_customize ) {
 		$wp_customize->add_control(
 			'ignites_child_' . $key . '_handle',
 			array(
-				'label'   => $label . ' handle (e.g. @ojars@social.example)',
+				/* translators: %s: name of the social network */
+				'label'   => sprintf( __( '%s handle (e.g. @ojars@social.example)', 'ignites-child' ), $label ),
 				'section' => 'ignites_child_social',
 				'type'    => 'text',
 			)
