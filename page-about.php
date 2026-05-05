@@ -31,25 +31,26 @@ get_header();
 							<?php
 							$ignites_child_socials = array(
 								array(
-									'name'   => 'Mastodon',
+									/* translators: social network name (Mastodon is a brand, usually left as-is) */
+									'name'   => __( 'Mastodon', 'ignites-child' ),
 									'url'    => get_theme_mod( 'ignites_child_mastodon_url', '' ),
 									'handle' => get_theme_mod( 'ignites_child_mastodon_handle', '' ),
 									'icon'   => 'mastodon.svg',
 								),
 								array(
-									'name'   => 'PixelFed',
+									'name'   => __( 'PixelFed', 'ignites-child' ),
 									'url'    => get_theme_mod( 'ignites_child_pixelfed_url', '' ),
 									'handle' => get_theme_mod( 'ignites_child_pixelfed_handle', '' ),
 									'icon'   => 'pixelfed.svg',
 								),
 								array(
-									'name'   => 'BookWyrm',
+									'name'   => __( 'BookWyrm', 'ignites-child' ),
 									'url'    => get_theme_mod( 'ignites_child_bookwyrm_url', '' ),
 									'handle' => get_theme_mod( 'ignites_child_bookwyrm_handle', '' ),
 									'icon'   => 'bookwyrm.png',
 								),
 								array(
-									'name'   => 'Forgejo',
+									'name'   => __( 'Forgejo', 'ignites-child' ),
 									'url'    => get_theme_mod( 'ignites_child_forgejo_url', '' ),
 									'handle' => get_theme_mod( 'ignites_child_forgejo_handle', '' ),
 									'icon'   => 'forgejo.svg',

@@ -28,20 +28,6 @@
 		<div class="entry-content">
 			<p class="entry-excerpt m-0"><?php echo wp_kses_post( get_the_excerpt() ); ?></p>
 		</div>
-		<footer class="entry-footer">
-			<span class="post-date"><?php echo esc_html( ignites_child_post_date() ); ?></span>
-			<?php
-			$ignites_child_hero_rt = ignites_child_reading_time();
-			if ( $ignites_child_hero_rt ) :
-				?>
-				<span class="reading-time"><?php echo esc_html( $ignites_child_hero_rt ); ?></span>
-			<?php endif; ?>
-			<?php
-			$ignites_child_hero_tags = get_the_tag_list( '<span class="tags-links">', '', '</span>' );
-			if ( $ignites_child_hero_tags ) {
-				echo wp_kses_post( $ignites_child_hero_tags );
-			}
-			?>
-		</footer>
+		<?php get_template_part( 'template-parts/entry', 'footer' ); ?>
 	</div>
 </article>

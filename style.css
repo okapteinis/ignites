@@ -5,7 +5,7 @@ Description:  Modern editorial redesign of the Ignites theme for ojars.kapteinis
 Author:       Ojārs Kapteinis
 Author URI:   https://ojars.kapteinis.lv
 Template:     ignites-nightly
-Version:      1.1.0
+Version:      1.1.1
 License:      GPL-2.0-or-later
 License URI:  http://www.gnu.org/licenses/gpl-2.0.html
 Text Domain:  ignites-child
@@ -715,54 +715,9 @@ h2.entry-title a:hover {
   margin-left: auto;
 }
 
-/* ==========================================================================
-   3.9 Author box
-   ========================================================================== */
-
-.author-wrap {
-  display: flex;
-  align-items: center;
-  gap: var(--space-6);
-  padding: var(--space-6);
-  background: var(--color-surface);
-  border-radius: var(--radius-lg);
-  border: 1px solid var(--color-border);
-  margin: var(--space-12) auto;
-  max-width: var(--content-narrow);
-}
-.author-img img {
-  border-radius: var(--radius-full);
-  width: 60px;
-  height: 60px;
-  object-fit: cover;
-  display: block;
-}
-.author-details {
-  flex: 1;
-  min-width: 0;
-}
-.author-details h2 {
-  font-family: var(--font-display);
-  font-size: var(--text-base);
-  font-weight: 600;
-  margin: 0 0 var(--space-2);
-  color: var(--color-text);
-}
-.author-details h2 a {
-  color: inherit;
-  text-decoration: none;
-}
-.author-details h2 a:hover {
-  color: var(--color-primary);
-}
-.author-details p {
-  font-family: var(--font-body);
-  font-size: var(--text-sm);
-  line-height: 1.6;
-  color: var(--color-text-muted);
-  max-width: 60ch;
-  margin: 0;
-}
+/* §3.9 Author box — removed in commit b1d397c (single.php no longer
+   renders .author-wrap; the personal blog has one author and the
+   redundant byline card was scroll-past noise). CSS deleted to match. */
 
 /* ==========================================================================
    3.10 Dark mode toggle
@@ -1037,7 +992,7 @@ aside.widget-area > section {
 }
 
 /* ==========================================================================
-   3.14 Parent-theme overrides — make hardcoded white cards follow the
+   3.13 Parent-theme overrides — make hardcoded white cards follow the
    surface tokens so dark mode actually inverts. The Ignites parent hardcodes
    white backgrounds on several card selectors and pure-black on menu links,
    with specificity that wins against our token-based rules. Match or beat
@@ -1083,7 +1038,7 @@ ul.primary-menu li:hover > a {
 }
 
 /* ==========================================================================
-   3.13 Responsive
+   3.14 Responsive
    ========================================================================== */
 
 /* Mobile drawer — parent hardcodes background: #f4f7f6 (light only) AND
@@ -1144,14 +1099,6 @@ ul.primary-menu li:hover > a {
   [data-theme-toggle] {
     bottom: var(--space-4);
     right: var(--space-4);
-  }
-  .author-wrap {
-    flex-direction: column;
-    align-items: flex-start;
-    text-align: left;
-  }
-  .navigation.post-navigation .row > div {
-    text-align: left !important;
   }
 }
 

@@ -53,21 +53,35 @@ function ignites_child_reading_time( $post = null ) {
 	if ( ! $post ) {
 		return '';
 	}
-	$content = strip_shortcodes( $post->post_content );
-	$content = wp_strip_all_tags( $content );
-	// Use Unicode-aware word count instead of str_word_count, which is
-	// locale-dependent and undercounts UTF-8 multibyte text — Latvian
-	// posts with `ā ē ī ō ū č ģ ķ ļ ņ š ž` were reading ~30% short.
-	// Closes ojars/ignites#3.
-	preg_match_all( '/\p{L}[\p{L}\p{M}\p{Nd}\'-]*/u', $content, $matches );
-	$words = count( $matches[0] );
-	if ( $words <= 0 ) {
-		return '';
+	// Cache the integer minute count in post_meta — formatting stays
+	// runtime so the i18n string honors current locale + plural forms.
+	// Cache is invalidated on save_post (see action below).
+	$minutes = (int) get_post_meta( $post->ID, '_ignites_child_reading_minutes', true );
+	if ( $minutes <= 0 ) {
+		$content = strip_shortcodes( $post->post_content );
+		$content = wp_strip_all_tags( $content );
+		preg_match_all( '/\p{L}[\p{L}\p{M}\p{Nd}\'-]*/u', $content, $matches );
+		$words = count( $matches[0] );
+		if ( $words <= 0 ) {
+			return '';
+		}
+		$minutes = max( 1, (int) ceil( $words / 200 ) );
+		update_post_meta( $post->ID, '_ignites_child_reading_minutes', $minutes );
 	}
-	$minutes = max( 1, (int) ceil( $words / 200 ) );
 	/* translators: %d: estimated reading time in minutes. */
 	return sprintf( _n( '%d min lasīšana', '%d min lasīšana', $minutes, 'ignites-child' ), $minutes );
 }
+
+/**
+ * Invalidate the cached reading-minutes meta on save so edits take
+ * effect on next render. Skips revisions/autosaves.
+ */
+add_action( 'save_post', function ( $post_id ) {
+	if ( wp_is_post_revision( $post_id ) || wp_is_post_autosave( $post_id ) ) {
+		return;
+	}
+	delete_post_meta( $post_id, '_ignites_child_reading_minutes' );
+} );
 
 /**
  * Latvian-formatted post date for the entry footer.
@@ -199,6 +213,21 @@ add_filter( 'gettext', function ( $translation, $text, $domain ) {
 
 	return $translation;
 }, 10, 3 );
+
+/**
+ * Preload the two render-critical font files (Cormorant Garamond latin
+ * subset + Inter Variable roman) so they start downloading in parallel
+ * with the CSS rather than waiting for the stylesheet to be parsed.
+ * Latin-ext + italic stay lazy — most pages don't trigger them on
+ * first paint. crossorigin is required even for same-origin font
+ * preloads, otherwise the browser ignores the hint.
+ */
+function ignites_child_preload_fonts() {
+	$base = get_stylesheet_directory_uri();
+	echo '<link rel="preload" href="' . esc_url( $base . '/assets/fonts/inter/InterVariable.woff2' ) . '" as="font" type="font/woff2" crossorigin>' . "\n";
+	echo '<link rel="preload" href="' . esc_url( $base . '/assets/fonts/cormorant-garamond/cormorant-garamond-latin.woff2' ) . '" as="font" type="font/woff2" crossorigin>' . "\n";
+}
+add_action( 'wp_head', 'ignites_child_preload_fonts', 2 );
 
 /**
  * Theme-bundled favicon + Apple touch icon. Emits in <head> at default
