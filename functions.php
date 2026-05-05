@@ -136,6 +136,18 @@ function ignites_child_footer_inline_js() {
 add_action( 'wp_footer', 'ignites_child_footer_inline_js', 5 );
 
 /**
+ * Theme-bundled favicon + Apple touch icon. Emits in <head> at default
+ * priority so it appears alongside other meta tags.
+ */
+function ignites_child_favicon() {
+	$base = get_stylesheet_directory_uri() . '/assets/images';
+	echo '<link rel="icon" type="image/png" sizes="32x32" href="' . esc_url( $base . '/favicon-32.png' ) . '">' . "\n";
+	echo '<link rel="icon" type="image/png" sizes="192x192" href="' . esc_url( $base . '/icon-192.png' ) . '">' . "\n";
+	echo '<link rel="apple-touch-icon" sizes="180x180" href="' . esc_url( $base . '/apple-touch-icon.png' ) . '">' . "\n";
+}
+add_action( 'wp_head', 'ignites_child_favicon', 5 );
+
+/**
  * Default <html data-theme> based on system preference, applied before paint
  * to avoid the light→dark flash. Printed in <head>.
  */

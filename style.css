@@ -5,7 +5,7 @@ Description:  Modern editorial redesign of the Ignites theme for ojars.kapteinis
 Author:       Ojārs Kapteinis
 Author URI:   https://ojars.kapteinis.lv
 Template:     ignites-nightly
-Version:      1.0.4
+Version:      1.0.5
 License:      GPL-2.0-or-later
 License URI:  http://www.gnu.org/licenses/gpl-2.0.html
 Text Domain:  ignites-child
@@ -829,18 +829,12 @@ h2.entry-title a:hover {
    3.12 Scroll-to-top
    ========================================================================== */
 
+/* Parent theme's back-to-top button — disabled because it appears at the
+   same bottom-right corner as our [data-theme-toggle] when scrolled,
+   stacking the two as overlapping circles. Native browser/OS gestures
+   (Cmd-Up, "tap status bar" on iOS, Home key) handle this fine. */
 .scroll-top {
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-full);
-  color: var(--color-text-muted);
-  box-shadow: var(--shadow-sm);
-  transition: box-shadow var(--transition), color var(--transition), background var(--transition);
-}
-.scroll-top:hover {
-  box-shadow: var(--shadow-md);
-  color: var(--color-primary);
-  background: var(--color-surface-2);
+  display: none !important;
 }
 
 /* ==========================================================================
