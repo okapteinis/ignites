@@ -10,7 +10,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /**
- * Enqueue parent + child stylesheets and Fontshare fonts.
+ * Enqueue parent + child stylesheets. Fonts are self-hosted via @font-face
+ * declarations at the top of the child stylesheet — no third-party requests.
  */
 function ignites_child_enqueue() {
 	// Parent theme stylesheet (handle 'ignites-parent' lets us declare it as a child dep).
@@ -21,19 +22,11 @@ function ignites_child_enqueue() {
 		wp_get_theme( get_template() )->get( 'Version' )
 	);
 
-	// Fontshare: Satoshi only (Boska is self-hosted via @font-face in style.css).
-	wp_enqueue_style(
-		'ignites-child-fonts',
-		'https://api.fontshare.com/v2/css?f[]=satoshi@300,400,500,700&display=swap',
-		array(),
-		null
-	);
-
-	// Child stylesheet — depends on parent + fonts so cascade ordering is correct.
+	// Child stylesheet — depends on parent so cascade ordering is correct.
 	wp_enqueue_style(
 		'ignites-child',
 		get_stylesheet_directory_uri() . '/style.css',
-		array( 'ignites-parent', 'ignites-child-fonts' ),
+		array( 'ignites-parent' ),
 		wp_get_theme()->get( 'Version' )
 	);
 }
