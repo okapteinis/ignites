@@ -142,18 +142,18 @@ add_action( 'wp_footer', 'ignites_child_footer_inline_js', 5 );
  * redundant when the chevron already implies pagination — drop it.
  */
 add_filter( 'gettext', function ( $translation, $text, $domain ) {
-	// Latvian core translation renders the WP defaults `Next »` / `« Previous`
-	// as `Nākamā lapa »` / `« Iepriekšējā lapa` — including the chevron in
-	// the translated string. Strip the redundant `lapa` word but preserve
-	// the chevron and surrounding spacing.
-	$replacements = array(
-		'Nākamā lapa »'    => 'Nākamā »',
-		'« Iepriekšējā lapa' => '« Iepriekšējā',
-		'Nākamā lapa'      => 'Nākamā',
-		'Iepriekšējā lapa' => 'Iepriekšējā',
-	);
-	if ( isset( $replacements[ $translation ] ) ) {
-		return $replacements[ $translation ];
+	// Latvian core translation of the paginate_links defaults `Next »` /
+	// `« Previous` resolves to `Nākamā lapa »` / `« Iepriekšējā lapa`.
+	// Drop the redundant `lapa` word — the chevron already implies
+	// pagination. Use str_replace (not exact-match) because the chevron
+	// can render as a raw `»` or HTML entity `&raquo;` depending on where
+	// the translation is consumed.
+	if ( false !== strpos( $translation, 'lapa' ) ) {
+		$translation = str_replace(
+			array( 'Nākamā lapa', 'Iepriekšējā lapa' ),
+			array( 'Nākamā', 'Iepriekšējā' ),
+			$translation
+		);
 	}
 	return $translation;
 }, 10, 3 );
