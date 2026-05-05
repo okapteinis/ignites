@@ -62,12 +62,23 @@ get_header();
 									if ( empty( $s['url'] ) ) {
 										continue;
 									}
-									$icon_url = get_stylesheet_directory_uri() . '/assets/icons/' . $s['icon'];
+									$icon_path = get_stylesheet_directory() . '/assets/icons/' . $s['icon'];
+									$is_svg    = ( substr( $s['icon'], -4 ) === '.svg' ) && file_exists( $icon_path );
 								?>
 									<li>
 										<a class="social-link" href="<?php echo esc_url( $s['url'] ); ?>" rel="me noopener" target="_blank">
 											<span class="social-icon" aria-hidden="true">
-												<img src="<?php echo esc_url( $icon_url ); ?>" alt="" width="28" height="28" loading="lazy" />
+												<?php
+												if ( $is_svg ) {
+													// Inline so fill="currentColor" inherits from .social-icon (theme-bundled file, trusted).
+													readfile( $icon_path );
+												} else {
+													$icon_url = get_stylesheet_directory_uri() . '/assets/icons/' . $s['icon'];
+													?>
+													<img src="<?php echo esc_url( $icon_url ); ?>" alt="" width="28" height="28" loading="lazy" />
+													<?php
+												}
+												?>
 											</span>
 											<span class="social-label">
 												<span class="social-name"><?php echo esc_html( $s['name'] ); ?></span>
