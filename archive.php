@@ -21,15 +21,6 @@ get_header();
 					<main id="main" class="site-main">
 						<?php if ( have_posts() ) : ?>
 
-							<?php if ( ! is_home() && ! is_front_page() ) : ?>
-								<header class="page-header">
-									<?php
-									the_archive_title( '<h1 class="page-title">', '</h1>' );
-									the_archive_description( '<div class="archive-description">', '</div>' );
-									?>
-								</header>
-							<?php endif; ?>
-
 							<?php
 							$ignites_child_post_count = 0;
 							while ( have_posts() ) :

@@ -27,8 +27,7 @@ get_header();
 							<?php the_content(); ?>
 						</div>
 
-						<section class="social-links" aria-labelledby="social-heading">
-							<h2 id="social-heading"><?php esc_html_e( 'Citur tīmeklī', 'ignites-child' ); ?></h2>
+						<section class="social-links" aria-label="<?php esc_attr_e( 'Sociālie tīkli', 'ignites-child' ); ?>">
 							<?php
 							$ignites_child_socials = array(
 								array(

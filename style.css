@@ -5,7 +5,7 @@ Description:  Modern editorial redesign of the Ignites theme for ojars.kapteinis
 Author:       Ojārs Kapteinis
 Author URI:   https://ojars.kapteinis.lv
 Template:     ignites-nightly
-Version:      1.0.1
+Version:      1.0.2
 License:      GPL-2.0-or-later
 License URI:  http://www.gnu.org/licenses/gpl-2.0.html
 Text Domain:  ignites-child
@@ -647,38 +647,34 @@ h2.entry-title a:hover {
    ========================================================================== */
 
 .navigation.post-navigation {
-  margin-top: var(--space-16);
-  padding-top: var(--space-8);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--space-6);
+  margin-top: var(--space-12);
+  padding-top: var(--space-6);
   border-top: 1px solid var(--color-divider);
   max-width: var(--content-narrow);
   margin-inline: auto;
 }
-.navigation.post-navigation .row {
-  gap: var(--space-6);
-}
-.nav-previous a,
-.nav-next a {
-  color: var(--color-text);
-  text-decoration: none;
+.navigation.post-navigation a.nav-previous,
+.navigation.post-navigation a.nav-next {
   font-family: var(--font-display);
   font-size: var(--text-base);
-  font-weight: 500;
+  color: var(--color-text-muted);
+  text-decoration: none;
   transition: color var(--transition);
-  display: block;
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+  padding: 0;
 }
-.nav-previous a:hover,
-.nav-next a:hover {
+.navigation.post-navigation a.nav-previous:hover,
+.navigation.post-navigation a.nav-next:hover {
   color: var(--color-primary);
 }
-.nav-txt {
-  display: block;
-  font-family: var(--font-body);
-  font-size: var(--text-xs);
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: var(--color-text-faint);
-  margin-bottom: var(--space-2);
-  font-weight: 600;
+.navigation.post-navigation a.nav-next {
+  margin-left: auto;
 }
 
 /* ==========================================================================
@@ -1040,19 +1036,10 @@ ul.primary-menu li:hover > a {
   color: var(--color-text);
 }
 
-/* Single-post prev/next nav cards — parent gives them white card backgrounds */
-.navigation.post-navigation .nav-previous,
-.navigation.post-navigation .nav-next {
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-sm);
-  padding: var(--space-4) var(--space-6);
-}
-.navigation.post-navigation .nav-previous a,
-.navigation.post-navigation .nav-next a {
-  color: var(--color-text);
-}
+/* Single-post prev/next nav: parent gives .nav-previous/.nav-next white card
+   backgrounds + 20px padding + box-shadow; §3.8 reformats them as flat
+   inline links via higher-specificity rules, so the parent's card styling
+   never paints. No override needed here. */
 
 /* Static page wrapper + 404 — parent gives them white card backgrounds */
 .content-area .page,
