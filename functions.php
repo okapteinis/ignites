@@ -136,6 +136,22 @@ function ignites_child_footer_inline_js() {
 add_action( 'wp_footer', 'ignites_child_footer_inline_js', 5 );
 
 /**
+ * Shorten Latvian pagination labels: parent theme renders the WordPress
+ * core "Next page" / "Previous page" strings, which Latvian translation
+ * resolves to "Nākamā lapa" / "Iepriekšējā lapa". The "lapa" word is
+ * redundant when the chevron already implies pagination — drop it.
+ */
+add_filter( 'gettext', function ( $translation, $text, $domain ) {
+	if ( 'Nākamā lapa' === $translation ) {
+		return 'Nākamā';
+	}
+	if ( 'Iepriekšējā lapa' === $translation ) {
+		return 'Iepriekšējā';
+	}
+	return $translation;
+}, 10, 3 );
+
+/**
  * Theme-bundled favicon + Apple touch icon. Emits in <head> at default
  * priority so it appears alongside other meta tags.
  */
