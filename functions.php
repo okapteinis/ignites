@@ -142,12 +142,7 @@ add_action( 'wp_footer', 'ignites_child_footer_inline_js', 5 );
  * redundant when the chevron already implies pagination — drop it.
  */
 add_filter( 'gettext', function ( $translation, $text, $domain ) {
-	// Latvian core translation of the paginate_links defaults `Next »` /
-	// `« Previous` resolves to `Nākamā lapa »` / `« Iepriekšējā lapa`.
-	// Drop the redundant `lapa` word — the chevron already implies
-	// pagination. Use str_replace (not exact-match) because the chevron
-	// can render as a raw `»` or HTML entity `&raquo;` depending on where
-	// the translation is consumed.
+	// 1. WP-core paginate_links: drop redundant `lapa` from the chevron.
 	if ( false !== strpos( $translation, 'lapa' ) ) {
 		$translation = str_replace(
 			array( 'Nākamā lapa', 'Iepriekšējā lapa' ),
@@ -155,6 +150,25 @@ add_filter( 'gettext', function ( $translation, $text, $domain ) {
 			$translation
 		);
 	}
+
+	// 2. Parent theme strings (English-only) — translate to Latvian for
+	// the search results / empty-state pages. Keyed on source `$text`
+	// so the lookup is exact and the `ignites` text domain is implied
+	// by these specific strings being ours to handle.
+	$parent_translations = array(
+		'Nothing Found'
+			=> 'Nekas nav atrasts',
+		'Sorry, but nothing matched your search terms. Please try again with some different keywords.'
+			=> 'Diemžēl meklētajam neviens raksts neatbilst. Pamēģini ar citiem atslēgvārdiem.',
+		'Search Results for: %s'
+			=> 'Meklēšanas rezultāti: %s',
+		'It seems we can&rsquo;t find what you&rsquo;re looking for. Perhaps searching can help.'
+			=> 'Šķiet, šeit nekas neatbilst meklētajam. Iespējams, meklētājs palīdzēs.',
+	);
+	if ( 'ignites' === $domain && isset( $parent_translations[ $text ] ) ) {
+		return $parent_translations[ $text ];
+	}
+
 	return $translation;
 }, 10, 3 );
 
