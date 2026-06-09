@@ -755,6 +755,50 @@ h2.entry-title a:hover {
   outline-offset: 2px;
 }
 
+/* Floating language switcher — circular control stacked directly ABOVE the
+   dark/light toggle, sharing its exact visual treatment (size / border /
+   shadow / hover / focus). Shows the TARGET language code (monochrome,
+   typographic) to mirror the sun/moon button. The [data-theme-toggle] block
+   above is left untouched so the toggle stays visually identical.
+   See functions.php ignites_child_render_lang_switch(). */
+[data-lang-switch] {
+  position: fixed;
+  right: var(--space-6);
+  /* directly above the 40px toggle (bottom:var(--space-6)) with a --space-3 gap */
+  bottom: calc(var(--space-6) + 40px + var(--space-3));
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-full);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  box-shadow: var(--shadow-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: var(--color-text-muted);
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-size: 0.8125rem; /* 13px — optically matches the 18px stroke icons */
+  letter-spacing: 0.02em;
+  line-height: 1;
+  text-decoration: none;
+  transition: background var(--transition), box-shadow var(--transition), color var(--transition), transform var(--transition);
+  z-index: 1000;
+  -webkit-appearance: none;
+  appearance: none;
+}
+[data-lang-switch]:hover {
+  background: var(--color-surface-offset);
+  box-shadow: var(--shadow-lg);
+  color: var(--color-text);
+  transform: translateY(-1px);
+}
+[data-lang-switch]:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
 /* ==========================================================================
    3.11 Footer
    ========================================================================== */
@@ -1099,6 +1143,10 @@ ul.primary-menu li:hover > a {
   [data-theme-toggle] {
     bottom: var(--space-4);
     right: var(--space-4);
+  }
+  [data-lang-switch] {
+    right: var(--space-4);
+    bottom: calc(var(--space-4) + 40px + var(--space-3));
   }
 }
 

@@ -107,6 +107,96 @@ function ignites_child_render_theme_toggle() {
 add_action( 'wp_body_open', 'ignites_child_render_theme_toggle' );
 
 /**
+ * Floating language switcher — a circular control stacked directly ABOVE the
+ * dark/light toggle in the same bottom-right corner (same wp_body_open hook;
+ * CSS positions it above the toggle, see [data-lang-switch] in style.css).
+ *
+ * Replaces qTranslate-XT's nav-menu language item (suppressed by the filter
+ * below) with a theme-native control. Shows the TARGET language code — EN on
+ * Latvian pages, LV on English pages — monochrome + typographic to mirror the
+ * sun/moon toggle. Uses qTranslate-XT helpers for current-language detection
+ * and URL generation; no plugin files are touched.
+ */
+function ignites_child_render_lang_switch() {
+	// Degrade gracefully if qTranslate-XT is inactive — render nothing rather
+	// than a broken control. (function_exists, not a hook — the helpers are
+	// callable at template time; only qtranslate's plugins_loaded:2 INIT hooks
+	// are unreachable theme-side, see infra-docs#257.)
+	if ( ! function_exists( 'qtranxf_getLanguage' ) || ! function_exists( 'qtranxf_convertURL' ) ) {
+		return;
+	}
+
+	$current = qtranxf_getLanguage();                       // 'lv' | 'en'
+	$target  = ( 'en' === $current ) ? 'lv' : 'en';
+
+	// Convert the CURRENT front-end URL to the target language via the plugin
+	// helper. qtranxf_convertURL('') strips the trailing slash from path-mode
+	// roots (infra-docs#258d) → pass the real URL and trailingslashit the
+	// result (only when there's no query string) to avoid a 301 hop on click.
+	$current_url = home_url( add_query_arg( array() ) );
+	$target_url  = qtranxf_convertURL( $current_url, $target );
+	if ( false === strpos( (string) $target_url, '?' ) ) {
+		$target_url = trailingslashit( $target_url );
+	}
+
+	// aria-label is authored in the CURRENT page language (so it reads
+	// correctly even before .mo lookup): on a LV page we offer English, etc.
+	$label = ( 'en' === $target )
+		? __( 'Pārslēgt uz angļu valodu', 'ignites-child' )
+		: __( 'Switch to Latvian', 'ignites-child' );
+	?>
+	<a data-lang-switch href="<?php echo esc_url( $target_url ); ?>" hreflang="<?php echo esc_attr( $target ); ?>" rel="alternate" aria-label="<?php echo esc_attr( $label ); ?>"><span aria-hidden="true"><?php echo esc_html( strtoupper( $target ) ); ?></span></a>
+	<?php
+}
+add_action( 'wp_body_open', 'ignites_child_render_lang_switch' );
+
+/**
+ * Suppress qTranslate-XT's language switcher from the nav menus — its menu
+ * presentation is replaced by the floating control above. wp_nav_menu_objects
+ * runs at render time, so this theme-side filter registers in time (unlike
+ * qTranslate's plugins_loaded:2 init hooks — infra-docs#257).
+ *
+ * Drops the switcher container (`menu-language-switcher`), any flat per-language
+ * items (`lang-item`), and any direct children of the container — covering both
+ * the single-item and dropdown switcher variants.
+ */
+add_filter( 'wp_nav_menu_objects', function ( $items ) {
+	if ( ! is_array( $items ) ) {
+		return $items;
+	}
+	$switcher_ids = array();
+	foreach ( $items as $item ) {
+		$classes = isset( $item->classes ) ? (array) $item->classes : array();
+		if ( in_array( 'menu-language-switcher', $classes, true ) || in_array( 'lang-item', $classes, true ) ) {
+			$switcher_ids[] = (int) $item->ID;
+		}
+	}
+	foreach ( $items as $key => $item ) {
+		$classes     = isset( $item->classes ) ? (array) $item->classes : array();
+		$is_switcher = in_array( 'menu-language-switcher', $classes, true ) || in_array( 'lang-item', $classes, true );
+		$is_child    = isset( $item->menu_item_parent ) && in_array( (int) $item->menu_item_parent, $switcher_ids, true );
+		if ( $is_switcher || $is_child ) {
+			unset( $items[ $key ] );
+		}
+	}
+	return $items;
+}, 10, 1 );
+
+/**
+ * Belt-and-suspenders: if qTranslate-XT injects the switcher as raw markup
+ * rather than as a menu object (so the objects filter above can't see it),
+ * strip the `<li … menu-language-switcher …>…</li>` element from the rendered
+ * menu HTML. Runs late (priority 100) so it sees qTranslate's output. No-op
+ * when the objects filter already removed the item.
+ */
+add_filter( 'wp_nav_menu_items', function ( $items_html ) {
+	if ( ! is_string( $items_html ) || false === strpos( $items_html, 'menu-language-switcher' ) ) {
+		return $items_html;
+	}
+	return preg_replace( '#<li[^>]*\bmenu-language-switcher\b[^>]*>.*?</li>#is', '', $items_html );
+}, 100, 1 );
+
+/**
  * Inline footer JS: dark-mode toggle (persistent via localStorage)
  * + reading-progress bar on single posts.
  */
