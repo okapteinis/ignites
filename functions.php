@@ -33,11 +33,16 @@ function ignites_child_enqueue() {
 	);
 
 	// Child stylesheet — depends on parent so cascade ordering is correct.
+	// Version by file mtime (not the theme Version header) so the ?ver= query
+	// busts browser + CDN caches on EVERY edit. Using the static theme Version
+	// meant a CSS change under an unchanged ?ver=1.1.1 kept serving stale CSS
+	// from cache (the 2026-06-09 floating-switcher regression).
+	$child_css = get_stylesheet_directory() . '/style.css';
 	wp_enqueue_style(
 		'ignites-child',
 		get_stylesheet_directory_uri() . '/style.css',
 		array( 'ignites-parent' ),
-		wp_get_theme()->get( 'Version' )
+		file_exists( $child_css ) ? (string) filemtime( $child_css ) : wp_get_theme()->get( 'Version' )
 	);
 }
 add_action( 'wp_enqueue_scripts', 'ignites_child_enqueue', 20 );
