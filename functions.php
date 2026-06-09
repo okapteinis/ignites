@@ -559,39 +559,60 @@ function ignites_child_canonical_en_url( $id ) {
 }
 
 /**
- * Add the English (/en/) URLs of genuinely EN-available posts + pages to the WP
- * core sitemap so search engines discover the translated content. Only entries
- * whose content actually has an EN translation (qtranxf_getAvailableLanguages)
- * are listed — LV-only posts are NOT (their /en/ would be a duplicate LV fallback).
- * The LV↔EN alternation signal is carried by the per-page <link rel="alternate"
- * hreflang> in <head> (qTranslate); WP's core sitemap renderer can't emit hreflang
- * inside an entry, so these are separate <loc> entries (fine for discovery).
+ * Dedicated sitemap provider for the English (/en/) URLs of genuinely EN-available
+ * posts + pages, so search engines discover the translated content. Only content
+ * that actually has an EN translation (qtranxf_getAvailableLanguages) is listed —
+ * LV-only posts are NOT (their /en/ would be a duplicate LV fallback). Surfaces as
+ * a `wp-sitemap-en-1.xml` sub-sitemap in the index.
  *
- * NOTE: appends to the post_type's URL list; correct while each post_type fits one
- * sitemap page (<2000 URLs — currently 375 posts / 2 pages). If a post_type ever
- * exceeds one sitemap page, move these to a dedicated sitemap provider to avoid
- * per-page duplication.
+ * Mechanism note: ClassicPress's core sitemap providers expose NO append filter
+ * (`wp_sitemaps_posts_url_list` does not exist here — only the short-circuit
+ * `wp_sitemaps_posts_pre_url_list` + the per-entry `wp_sitemaps_posts_entry`), so a
+ * custom provider is the correct way to add URLs. The LV↔EN alternation signal is
+ * separately carried by the per-page <link rel="alternate" hreflang> in <head>
+ * (qTranslate); the core renderer can't emit hreflang inside an entry.
  */
-add_filter( 'wp_sitemaps_posts_url_list', function ( $url_list, $post_type ) {
-	if ( ! function_exists( 'qtranxf_getAvailableLanguages' ) ) {
-		return $url_list;
-	}
-	$ids = get_posts( array(
-		'post_type'        => $post_type,
-		'post_status'      => 'publish',
-		'numberposts'      => -1,
-		'fields'           => 'ids',
-		'suppress_filters' => true,
-	) );
-	foreach ( $ids as $id ) {
-		$available = qtranxf_getAvailableLanguages( get_post_field( 'post_content', $id ) );
-		if ( ! in_array( 'en', (array) $available, true ) ) {
-			continue;
+if ( class_exists( 'WP_Sitemaps_Provider' ) ) {
+	class Ignites_Child_EN_Sitemap_Provider extends WP_Sitemaps_Provider {
+		public function __construct() {
+			$this->name        = 'en';
+			$this->object_type = 'en';
 		}
-		$en = ignites_child_canonical_en_url( $id );
-		if ( $en ) {
-			$url_list[] = array( 'loc' => $en );
+		public function get_url_list( $page_num, $object_subtype = '' ) {
+			$urls = array();
+			if ( ! function_exists( 'qtranxf_getAvailableLanguages' ) ) {
+				return $urls;
+			}
+			foreach ( array( 'post', 'page' ) as $pt ) {
+				$ids = get_posts( array(
+					'post_type'        => $pt,
+					'post_status'      => 'publish',
+					'numberposts'      => -1,
+					'fields'           => 'ids',
+					'suppress_filters' => true,
+				) );
+				foreach ( $ids as $id ) {
+					$available = qtranxf_getAvailableLanguages( get_post_field( 'post_content', $id ) );
+					if ( ! in_array( 'en', (array) $available, true ) ) {
+						continue;
+					}
+					$en = ignites_child_canonical_en_url( $id );
+					if ( $en ) {
+						$urls[] = array( 'loc' => $en );
+					}
+				}
+			}
+			return $urls;
+		}
+		public function get_max_num_pages( $object_subtype = '' ) {
+			return 1; // small EN set; well under the 2000-URL page cap
 		}
 	}
-	return $url_list;
-}, 10, 2 );
+	// ClassicPress lacks wp_sitemaps_register_provider(); add to the server registry directly.
+	add_action( 'init', function () {
+		$server = wp_sitemaps_get_server();
+		if ( $server && isset( $server->registry ) && method_exists( $server->registry, 'add_provider' ) ) {
+			$server->registry->add_provider( 'en', new Ignites_Child_EN_Sitemap_Provider() );
+		}
+	}, 20 );
+}
