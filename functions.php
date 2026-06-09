@@ -536,3 +536,62 @@ add_action( 'save_post', function ( $post_id ) {
 	}
 	delete_transient( 'ignites_child_en_avail_cats' );
 } );
+
+/**
+ * Canonical English URL for a post/page. The qTranslate Slugs module stores the
+ * translated slug in post_meta `qtranslate_slug_en` (e.g. par-mani → about-me);
+ * when present we swap the last path segment, otherwise the LV slug is reused
+ * (e.g. the saites/links posts keep their slug). Always under the /en/ prefix.
+ */
+function ignites_child_canonical_en_url( $id ) {
+	$lv    = get_permalink( $id );
+	$parts = wp_parse_url( $lv );
+	if ( empty( $parts['host'] ) ) {
+		return '';
+	}
+	$path    = isset( $parts['path'] ) ? $parts['path'] : '/';
+	$en_slug = get_post_meta( $id, 'qtranslate_slug_en', true );
+	if ( ! empty( $en_slug ) ) {
+		$path = preg_replace( '#/[^/]+/?$#', '/' . $en_slug . '/', $path );
+	}
+	$scheme = isset( $parts['scheme'] ) ? $parts['scheme'] : 'https';
+	return $scheme . '://' . $parts['host'] . '/en' . $path;
+}
+
+/**
+ * Add the English (/en/) URLs of genuinely EN-available posts + pages to the WP
+ * core sitemap so search engines discover the translated content. Only entries
+ * whose content actually has an EN translation (qtranxf_getAvailableLanguages)
+ * are listed — LV-only posts are NOT (their /en/ would be a duplicate LV fallback).
+ * The LV↔EN alternation signal is carried by the per-page <link rel="alternate"
+ * hreflang> in <head> (qTranslate); WP's core sitemap renderer can't emit hreflang
+ * inside an entry, so these are separate <loc> entries (fine for discovery).
+ *
+ * NOTE: appends to the post_type's URL list; correct while each post_type fits one
+ * sitemap page (<2000 URLs — currently 375 posts / 2 pages). If a post_type ever
+ * exceeds one sitemap page, move these to a dedicated sitemap provider to avoid
+ * per-page duplication.
+ */
+add_filter( 'wp_sitemaps_posts_url_list', function ( $url_list, $post_type ) {
+	if ( ! function_exists( 'qtranxf_getAvailableLanguages' ) ) {
+		return $url_list;
+	}
+	$ids = get_posts( array(
+		'post_type'        => $post_type,
+		'post_status'      => 'publish',
+		'numberposts'      => -1,
+		'fields'           => 'ids',
+		'suppress_filters' => true,
+	) );
+	foreach ( $ids as $id ) {
+		$available = qtranxf_getAvailableLanguages( get_post_field( 'post_content', $id ) );
+		if ( ! in_array( 'en', (array) $available, true ) ) {
+			continue;
+		}
+		$en = ignites_child_canonical_en_url( $id );
+		if ( $en ) {
+			$url_list[] = array( 'loc' => $en );
+		}
+	}
+	return $url_list;
+}, 10, 2 );
