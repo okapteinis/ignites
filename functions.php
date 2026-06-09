@@ -33,11 +33,16 @@ function ignites_child_enqueue() {
 	);
 
 	// Child stylesheet — depends on parent so cascade ordering is correct.
+	// Version by file mtime (not the theme Version header) so the ?ver= query
+	// busts browser + CDN caches on EVERY edit. Using the static theme Version
+	// meant a CSS change under an unchanged ?ver=1.1.1 kept serving stale CSS
+	// from cache (the 2026-06-09 floating-switcher regression).
+	$child_css = get_stylesheet_directory() . '/style.css';
 	wp_enqueue_style(
 		'ignites-child',
 		get_stylesheet_directory_uri() . '/style.css',
 		array( 'ignites-parent' ),
-		wp_get_theme()->get( 'Version' )
+		file_exists( $child_css ) ? (string) filemtime( $child_css ) : wp_get_theme()->get( 'Version' )
 	);
 }
 add_action( 'wp_enqueue_scripts', 'ignites_child_enqueue', 20 );
@@ -145,7 +150,15 @@ function ignites_child_render_lang_switch() {
 		? __( 'Pārslēgt uz angļu valodu', 'ignites-child' )
 		: __( 'Switch to Latvian', 'ignites-child' );
 	?>
-	<a data-lang-switch href="<?php echo esc_url( $target_url ); ?>" hreflang="<?php echo esc_attr( $target ); ?>" rel="alternate" aria-label="<?php echo esc_attr( $label ); ?>"><span aria-hidden="true"><?php echo esc_html( strtoupper( $target ) ); ?></span></a>
+	<?php
+	// rel="noreferrer" is load-bearing, not cosmetic: without it the browser sends
+	// a cross-language Referer (e.g. /en/) when navigating to the slug-free default-
+	// language root "/", and qTranslate-XT's Slugs module (infra-docs#257) uses that
+	// Referer to keep serving English at "/". Suppressing the Referer lets qTranslate
+	// resolve "/" to the default language (LV). EN target (/en/) carries its own path
+	// marker so it switches regardless; noreferrer on both is harmless + consistent.
+	?>
+	<a data-lang-switch href="<?php echo esc_url( $target_url ); ?>" hreflang="<?php echo esc_attr( $target ); ?>" rel="noreferrer" aria-label="<?php echo esc_attr( $label ); ?>"><span aria-hidden="true"><?php echo esc_html( strtoupper( $target ) ); ?></span></a>
 	<?php
 }
 add_action( 'wp_body_open', 'ignites_child_render_lang_switch' );
