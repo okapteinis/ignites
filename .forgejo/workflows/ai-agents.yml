@@ -1,0 +1,111 @@
+name: Ignites AI Review
+
+# Reviews ojars/ignites PRs via the Teika /review/pr pipeline (ADR-003,
+# single-council). Mirrors teika + SurfSense + infra-scripts ai-agents.yml.
+# infra-docs#216 Tier-1 rollout. Slim PR-diff-review only (no agent_discussion).
+#
+# Auth: secrets.TEIKA_GATEWAY_JWT (= teika.surfsense_api_key in SOPS,
+# fastapi-users JWT scoped to the SurfSense-as-service caller identity)
+# and secrets.TEIKA_FORGEJO_TOKEN (Forgejo PAT for diff fetch + comment
+# POST). Values mirror what's set on ojars/SurfSense.
+#
+# The legacy `<!-- ai-agent -->` PR-body skip-convention is intentionally
+# OMITTED — retired 2026-05-01 per CLAUDE.md "Every PR must run through
+# the Teika AI review" rule.
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, edited]
+
+jobs:
+  ai-review:
+    runs-on: self-hosted
+    timeout-minutes: 30
+    # One run at a time per PR. New push supersedes in-flight review.
+    concurrency:
+      group: ${{ github.workflow }}-${{ github.event.pull_request.number }}
+      cancel-in-progress: true
+
+    steps:
+      - name: Teika PR Review
+        env:
+          TEIKA_GATEWAY_JWT: ${{ secrets.TEIKA_GATEWAY_JWT }}
+          TEIKA_FORGEJO_TOKEN: ${{ secrets.TEIKA_FORGEJO_TOKEN }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          PR_TITLE: ${{ github.event.pull_request.title }}
+          PR_BODY: ${{ github.event.pull_request.body }}
+          REPO: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+          echo "TEIKA IGNITES REVIEW — PR #$PR_NUMBER ($REPO)"
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+
+          # 1. Fetch the unified diff from Forgejo.
+          # --http1.1 dodges CF→yuno loopback `curl: (92) PROTOCOL_ERROR` —
+          # see infra-docs#212 rollout (root: infra-docs#195 L4).
+          # Stream the diff to a file — NEVER into a jq `--arg` value. A single
+          # execve() argument is capped at MAX_ARG_STRLEN (128 KB on Linux),
+          # independent of total ARG_MAX; a large PR diff as `--arg diff "$DIFF"`
+          # → `jq: Argument list too long` (exit 126) and the council silently
+          # never runs. Fixed first on infra-docs (#341/#342), rolled here.
+          DIFF_FILE="${RUNNER_TEMP:-/tmp}/pr-${PR_NUMBER}.diff"
+          curl -sS --http1.1 -H "Authorization: token $TEIKA_FORGEJO_TOKEN" \
+            "https://git.kapteinis.lv/api/v1/repos/$REPO/pulls/$PR_NUMBER.diff" \
+            -o "$DIFF_FILE"
+          echo "Diff size: $(wc -c < "$DIFF_FILE") chars"
+
+          # 2. Build request payload. `--rawfile diff <file>` reads the diff from
+          # the file (no argv size limit), replacing the old `--arg diff "$DIFF"`.
+          REQ=$(jq -n \
+            --arg repo "$REPO" \
+            --argjson pr "$PR_NUMBER" \
+            --arg title "$PR_TITLE" \
+            --arg body "$PR_BODY" \
+            --rawfile diff "$DIFF_FILE" \
+            '{repo:$repo, pr_number:$pr, title:$title, body:$body, diff:$diff}')
+
+          # 3. POST to Teika /review/pr. 3 retries × 30s on transient network
+          #    error. Pipeline-level errors return HTTP 200 with verdict=BLOCKED
+          #    in the body — those are reflected on the PR, not retried.
+          SUCCESS=0
+          for attempt in 1 2 3; do
+            if RESULT=$(curl -sSf -X POST \
+                  --max-time 1500 \
+                  -H "Authorization: Bearer $TEIKA_GATEWAY_JWT" \
+                  -H "Content-Type: application/json" \
+                  -d "$REQ" \
+                  "http://100.64.0.5:8090/review/pr"); then
+              SUCCESS=1
+              break
+            fi
+            echo "Attempt $attempt failed — sleeping 30s before retry..."
+            sleep 30
+          done
+
+          # Fail-fast on triple-retry failure (closes silent-green class
+          # from SurfSense#631 — without this, RESULT empty + jq returns
+          # "null" + step exits 0 = false-pass on transport failure).
+          if [ "$SUCCESS" -ne 1 ]; then
+            echo "::error::Teika /review/pr unreachable after 3 attempts"
+            exit 1
+          fi
+
+          VERDICT=$(jq -r '.verdict' <<< "$RESULT")
+          BODY=$(jq -r '.summary_md' <<< "$RESULT")
+          echo "Teika returned verdict: $VERDICT"
+
+          # 4. Post the synthesized review as a single Forgejo PR comment.
+          # (--http1.1 for the same CF-loopback reason as step 1.)
+          curl -sSf --http1.1 -X POST \
+            -H "Authorization: token $TEIKA_FORGEJO_TOKEN" \
+            -H "Content-Type: application/json" \
+            -d "$(jq -n --arg body "$BODY" '{body:$body}')" \
+            "https://git.kapteinis.lv/api/v1/repos/$REPO/issues/$PR_NUMBER/comments"
+
+          # 5. Surface BLOCKED as workflow failure (red status check).
+          #    NEEDS_CHANGES still passes — the comment is informational.
+          if [ "$VERDICT" = "BLOCKED" ]; then
+            echo "::error::Teika returned BLOCKED — see comment on PR #$PR_NUMBER"
+            exit 1
+          fi
