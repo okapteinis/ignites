@@ -799,6 +799,21 @@ h2.entry-title a:hover {
   outline-offset: 2px;
 }
 
+/* The shared --color-border (8–9% opacity) is too faint for these fixed,
+   floating circles — it rendered inconsistently over varying page content,
+   so the toggle and the language button looked unequal. Give BOTH a crisper,
+   background-independent border so the circle is clearly visible and identical.
+   (data-theme is always set by the no-flash <head> script, so the dark
+   override below reliably applies in dark mode.) */
+[data-theme-toggle],
+[data-lang-switch] {
+  border-color: rgba(0, 0, 0, 0.22);
+}
+[data-theme="dark"] [data-theme-toggle],
+[data-theme="dark"] [data-lang-switch] {
+  border-color: rgba(255, 255, 255, 0.24);
+}
+
 /* ==========================================================================
    3.11 Footer
    ========================================================================== */
