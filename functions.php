@@ -426,6 +426,41 @@ function ignites_child_favicon() {
 add_action( 'wp_head', 'ignites_child_favicon', 5 );
 
 /**
+ * Cloudflare Web Analytics beacon — privacy-first, COOKIELESS reader counter.
+ * Sets no cookies / no localStorage / no cross-site identifier, so it needs no
+ * cookie-consent banner. Injected MANUALLY (deferred, in wp_footer) because
+ * Cloudflare's zone-level "automatic" edge-injection was verified NOT firing on
+ * this hostname (2026-06-10) — the manual beacon is the reliable method. Bound to
+ * a DEDICATED RUM site (host=ojars.kapteinis.lv) so the blog's numbers stay
+ * separate from the kapteinis.lv apex zone site.
+ *
+ * The beacon token is NOT hardcoded — it is read from the `ignites_cf_beacon_token`
+ * WP option (set once via wp-cli; rotate with one `wp option update`, no code
+ * deploy, never in git history). It is a public client-side property id (the
+ * analogue of a GA G-XXXX tag) and necessarily appears in the rendered HTML, but
+ * keeping it out of source means a vendor-semantics change (cf. the 2026 Google
+ * Maps-key→Gemini-auth drift) is a config rotation, not a code+git-history fix.
+ * If the option is unset the beacon simply doesn't render. The host guard keeps a
+ * stray theme copy/preview from polluting the dedicated site.
+ * Dashboard: Cloudflare → Web Analytics → ojars.kapteinis.lv. See INFRA_REF §10.
+ */
+function ignites_child_cf_web_analytics() {
+	$host = isset( $_SERVER['HTTP_HOST'] ) ? strtolower( wp_unslash( $_SERVER['HTTP_HOST'] ) ) : '';
+	if ( 'ojars.kapteinis.lv' !== $host ) {
+		return;
+	}
+	$token = get_option( 'ignites_cf_beacon_token' );
+	if ( ! $token ) {
+		return;
+	}
+	$beacon = wp_json_encode( array( 'token' => $token ) );
+	echo "<!-- Cloudflare Web Analytics -->\n";
+	echo '<script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon="' . esc_attr( $beacon ) . '"></script>' . "\n";
+	echo "<!-- End Cloudflare Web Analytics -->\n";
+}
+add_action( 'wp_footer', 'ignites_child_cf_web_analytics', 20 );
+
+/**
  * Default <html data-theme> based on system preference, applied before paint
  * to avoid the light→dark flash. Printed in <head>.
  */
