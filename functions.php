@@ -261,6 +261,50 @@ add_filter( 'gettext', function ( $translation, $text, $domain ) {
 }, 10, 3 );
 
 /**
+ * Plural strings go through `ngettext`, NOT `gettext`, so the EN map above never
+ * sees them. The theme's only _n() string is the reading-time
+ * (`%d min lasīšana`), which without this stays Latvian on /en/. Mirror it here.
+ */
+add_filter( 'ngettext', function ( $translation, $single, $plural, $number, $domain ) {
+	if ( 'ignites-child' !== $domain ) {
+		return $translation;
+	}
+	if ( ! function_exists( 'qtranxf_getLanguage' ) || 'en' !== qtranxf_getLanguage() ) {
+		return $translation;
+	}
+	if ( '%d min lasīšana' === $single ) {
+		return '%d min read';
+	}
+	return $translation;
+}, 10, 5 );
+
+/**
+ * Translate the displayed CATEGORY name on the EN side (the "SAITES" label above
+ * post titles, rendered by get_the_category_list()). qTranslate term names are
+ * NOT bracketed in wp_terms.name here, because the term-display path doesn't parse
+ * `[:lv]…[:en]…[:]` brackets (they leak literally — infra-docs#258e); so the name
+ * is translated in-theme instead, keyed by slug. CSS uppercases the label, so
+ * natural case is fine. Falls back to the stored (LV) name for unmapped slugs.
+ */
+add_filter( 'get_the_categories', function ( $categories ) {
+	if ( ! is_array( $categories ) || ! function_exists( 'qtranxf_getLanguage' ) || 'en' !== qtranxf_getLanguage() ) {
+		return $categories;
+	}
+	$en = array(
+		'saites'   => 'Links',
+		'teksti'   => 'Blog',
+		'podkasts' => 'Podcast',
+		'bildes'   => 'Photos',
+	);
+	foreach ( $categories as $cat ) {
+		if ( isset( $cat->slug, $en[ $cat->slug ] ) ) {
+			$cat->name = $en[ $cat->slug ];
+		}
+	}
+	return $categories;
+}, 10, 1 );
+
+/**
  * Mirror WP locale to qTranslate-XT's current language. Without this,
  * WP-core strings (Previous, Next, Skip to content), date formatting
  * (`j. F Y` → "februāris" vs "February"), and comment / form labels
