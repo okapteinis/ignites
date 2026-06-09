@@ -1278,6 +1278,7 @@ ul.primary-menu li:hover > a {
   .primary-menu > li > a,
   .scroll-top,
   [data-theme-toggle],
+  [data-lang-switch],
   .dope-pagination .page-numbers {
     min-height: 44px;
     min-width: 44px;

@@ -33,10 +33,9 @@ function ignites_child_enqueue() {
 	);
 
 	// Child stylesheet — depends on parent so cascade ordering is correct.
-	// Version by file mtime (not the theme Version header) so the ?ver= query
-	// busts browser + CDN caches on EVERY edit. Using the static theme Version
-	// meant a CSS change under an unchanged ?ver=1.1.1 kept serving stale CSS
-	// from cache (the 2026-06-09 floating-switcher regression).
+	// Version by file mtime (not the static theme Version) so the ?ver= query
+	// busts browser + CDN caches on EVERY edit — a static ver kept serving
+	// stale CSS after edits (the 2026-06-09 unstyled-switcher regression).
 	$child_css = get_stylesheet_directory() . '/style.css';
 	wp_enqueue_style(
 		'ignites-child',
@@ -109,105 +108,12 @@ function ignites_child_render_theme_toggle() {
 	<button type="button" data-theme-toggle aria-label="<?php esc_attr_e( 'Mainīt tēmu', 'ignites-child' ); ?>" hidden></button>
 	<?php
 }
-add_action( 'wp_body_open', 'ignites_child_render_theme_toggle' );
-
-/**
- * Floating language switcher — a circular control stacked directly ABOVE the
- * dark/light toggle in the same bottom-right corner (same wp_body_open hook;
- * CSS positions it above the toggle, see [data-lang-switch] in style.css).
- *
- * Replaces qTranslate-XT's nav-menu language item (suppressed by the filter
- * below) with a theme-native control. Shows the TARGET language code — EN on
- * Latvian pages, LV on English pages — monochrome + typographic to mirror the
- * sun/moon toggle. Uses qTranslate-XT helpers for current-language detection
- * and URL generation; no plugin files are touched.
- */
-function ignites_child_render_lang_switch() {
-	// Degrade gracefully if qTranslate-XT is inactive — render nothing rather
-	// than a broken control. (function_exists, not a hook — the helpers are
-	// callable at template time; only qtranslate's plugins_loaded:2 INIT hooks
-	// are unreachable theme-side, see infra-docs#257.)
-	if ( ! function_exists( 'qtranxf_getLanguage' ) || ! function_exists( 'qtranxf_convertURL' ) ) {
-		return;
-	}
-
-	$current = qtranxf_getLanguage();                       // 'lv' | 'en'
-	$target  = ( 'en' === $current ) ? 'lv' : 'en';
-
-	// Convert the CURRENT front-end URL to the target language via the plugin
-	// helper. qtranxf_convertURL('') strips the trailing slash from path-mode
-	// roots (infra-docs#258d) → pass the real URL and trailingslashit the
-	// result (only when there's no query string) to avoid a 301 hop on click.
-	$current_url = home_url( add_query_arg( array() ) );
-	$target_url  = qtranxf_convertURL( $current_url, $target );
-	if ( false === strpos( (string) $target_url, '?' ) ) {
-		$target_url = trailingslashit( $target_url );
-	}
-
-	// aria-label is authored in the CURRENT page language (so it reads
-	// correctly even before .mo lookup): on a LV page we offer English, etc.
-	$label = ( 'en' === $target )
-		? __( 'Pārslēgt uz angļu valodu', 'ignites-child' )
-		: __( 'Switch to Latvian', 'ignites-child' );
-	?>
-	<?php
-	// rel="noreferrer" is load-bearing, not cosmetic: without it the browser sends
-	// a cross-language Referer (e.g. /en/) when navigating to the slug-free default-
-	// language root "/", and qTranslate-XT's Slugs module (infra-docs#257) uses that
-	// Referer to keep serving English at "/". Suppressing the Referer lets qTranslate
-	// resolve "/" to the default language (LV). EN target (/en/) carries its own path
-	// marker so it switches regardless; noreferrer on both is harmless + consistent.
-	?>
-	<a data-lang-switch href="<?php echo esc_url( $target_url ); ?>" hreflang="<?php echo esc_attr( $target ); ?>" rel="noreferrer" aria-label="<?php echo esc_attr( $label ); ?>"><span aria-hidden="true"><?php echo esc_html( strtoupper( $target ) ); ?></span></a>
-	<?php
-}
-add_action( 'wp_body_open', 'ignites_child_render_lang_switch' );
-
-/**
- * Suppress qTranslate-XT's language switcher from the nav menus — its menu
- * presentation is replaced by the floating control above. wp_nav_menu_objects
- * runs at render time, so this theme-side filter registers in time (unlike
- * qTranslate's plugins_loaded:2 init hooks — infra-docs#257).
- *
- * Drops the switcher container (`menu-language-switcher`), any flat per-language
- * items (`lang-item`), and any direct children of the container — covering both
- * the single-item and dropdown switcher variants.
- */
-add_filter( 'wp_nav_menu_objects', function ( $items ) {
-	if ( ! is_array( $items ) ) {
-		return $items;
-	}
-	$switcher_ids = array();
-	foreach ( $items as $item ) {
-		$classes = isset( $item->classes ) ? (array) $item->classes : array();
-		if ( in_array( 'menu-language-switcher', $classes, true ) || in_array( 'lang-item', $classes, true ) ) {
-			$switcher_ids[] = (int) $item->ID;
-		}
-	}
-	foreach ( $items as $key => $item ) {
-		$classes     = isset( $item->classes ) ? (array) $item->classes : array();
-		$is_switcher = in_array( 'menu-language-switcher', $classes, true ) || in_array( 'lang-item', $classes, true );
-		$is_child    = isset( $item->menu_item_parent ) && in_array( (int) $item->menu_item_parent, $switcher_ids, true );
-		if ( $is_switcher || $is_child ) {
-			unset( $items[ $key ] );
-		}
-	}
-	return $items;
-}, 10, 1 );
-
-/**
- * Belt-and-suspenders: if qTranslate-XT injects the switcher as raw markup
- * rather than as a menu object (so the objects filter above can't see it),
- * strip the `<li … menu-language-switcher …>…</li>` element from the rendered
- * menu HTML. Runs late (priority 100) so it sees qTranslate's output. No-op
- * when the objects filter already removed the item.
- */
-add_filter( 'wp_nav_menu_items', function ( $items_html ) {
-	if ( ! is_string( $items_html ) || false === strpos( $items_html, 'menu-language-switcher' ) ) {
-		return $items_html;
-	}
-	return preg_replace( '#<li[^>]*\bmenu-language-switcher\b[^>]*>.*?</li>#is', '', $items_html );
-}, 100, 1 );
+// wp_footer (not wp_body_open) so the control renders on EVERY view — the parent
+// theme only fires wp_body_open from index.php (home/blog-index), so singular pages
+// and archives never got it. wp_footer fires on all templates. Priority 1 keeps the
+// button in the DOM before the footer JS (priority 5) that wires it. position:fixed
+// means footer-vs-body-open makes no visual difference (same bottom-right corner).
+add_action( 'wp_footer', 'ignites_child_render_theme_toggle', 1 );
 
 /**
  * Inline footer JS: dark-mode toggle (persistent via localStorage)
@@ -287,6 +193,8 @@ add_action( 'wp_footer', 'ignites_child_footer_inline_js', 5 );
  * redundant when the chevron already implies pagination — drop it.
  */
 add_filter( 'gettext', function ( $translation, $text, $domain ) {
+	$is_en = function_exists( 'qtranxf_getLanguage' ) && 'en' === qtranxf_getLanguage();
+
 	// 1. WP-core paginate_links: drop redundant `lapa` from the chevron.
 	if ( false !== strpos( $translation, 'lapa' ) ) {
 		$translation = str_replace(
@@ -296,26 +204,155 @@ add_filter( 'gettext', function ( $translation, $text, $domain ) {
 		);
 	}
 
-	// 2. Parent theme strings (English-only) — translate to Latvian for
-	// the search results / empty-state pages. Keyed on source `$text`
-	// so the lookup is exact and the `ignites` text domain is implied
-	// by these specific strings being ours to handle.
-	$parent_translations = array(
-		'Nothing Found'
-			=> 'Nekas nav atrasts',
-		'Sorry, but nothing matched your search terms. Please try again with some different keywords.'
-			=> 'Diemžēl meklētajam neviens raksts neatbilst. Pamēģini ar citiem atslēgvārdiem.',
-		'Search Results for: %s'
-			=> 'Meklēšanas rezultāti: %s',
-		'It seems we can&rsquo;t find what you&rsquo;re looking for. Perhaps searching can help.'
-			=> 'Šķiet, šeit nekas neatbilst meklētajam. Iespējams, meklētājs palīdzēs.',
-	);
-	if ( 'ignites' === $domain && isset( $parent_translations[ $text ] ) ) {
-		return $parent_translations[ $text ];
+	// 2. Parent theme English strings → Latvian on the LV side. The
+	// parent theme ships in English; the WP-core LV pack doesn't cover
+	// these theme-specific strings, so we provide them. On the EN side
+	// the original English source is the right answer — skip the swap.
+	if ( ! $is_en && 'ignites' === $domain ) {
+		$parent_translations = array(
+			'Nothing Found'
+				=> 'Nekas nav atrasts',
+			'Sorry, but nothing matched your search terms. Please try again with some different keywords.'
+				=> 'Diemžēl meklētajam neviens raksts neatbilst. Pamēģini ar citiem atslēgvārdiem.',
+			'Search Results for: %s'
+				=> 'Meklēšanas rezultāti: %s',
+			'It seems we can&rsquo;t find what you&rsquo;re looking for. Perhaps searching can help.'
+				=> 'Šķiet, šeit nekas neatbilst meklētajam. Iespējams, meklētājs palīdzēs.',
+			'Skip to content'                                                                          => 'Pāriet uz saturu',
+			'Search'                                                                                   => 'Meklēt',
+			'Comment navigation'                                                                       => 'Komentāru navigācija',
+			'Comments are closed.'                                                                     => 'Komentāri ir slēgti.',
+			'Next post'                                                                                => 'Nākamais raksts',
+			'Previous post'                                                                            => 'Iepriekšējais raksts',
+			'Oops! That page can&rsquo;t be found.'                                                    => 'Ups! Šī lapa nav atrodama.',
+			'It looks like nothing was found at this location. Maybe try one of the links below or a search?' => 'Šeit, šķiet, nekas nav atrasts. Pamēģini kādu no zemākajām saitēm vai meklētāju.',
+		);
+		if ( isset( $parent_translations[ $text ] ) ) {
+			return $parent_translations[ $text ];
+		}
+	}
+
+	// 3. Child theme Latvian source strings → English on the EN side.
+	// The strings below live in `__()` calls in Latvian (this theme's
+	// source language is LV) and would render Latvian on /en/ without
+	// this lookup. Inline map avoids a .mo file + msgfmt toolchain;
+	// see ojars/ignites#10 for the wider qTranslate-XT integration.
+	if ( $is_en && 'ignites-child' === $domain ) {
+		$child_en = array(
+			'Mainīt tēmu'                                                                      => 'Change theme',
+			'Pārslēgt uz tumšo tēmu'                                                           => 'Switch to dark theme',
+			'Pārslēgt uz gaišo tēmu'                                                           => 'Switch to light theme',
+			'%d min lasīšana'                                                                  => '%d min read',
+			'Meklēt'                                                                           => 'Search',
+			'Meklēt…'                                                                          => 'Search…',
+			'Raksta navigācija'                                                                => 'Post navigation',
+			'Sociālie tīkli'                                                                   => 'Social networks',
+			'404 — lapa nav atrasta'                                                           => '404 — page not found',
+			'Iepriekšējais'                                                                    => 'Previous',
+			'Nākamais'                                                                         => 'Next',
+			'Šeit nekā nav. Pamēģini sākumlapu vai izmanto meklētāju zemāk.'                   => 'Nothing here. Try the homepage or use the search below.',
+		);
+		if ( isset( $child_en[ $text ] ) ) {
+			return $child_en[ $text ];
+		}
 	}
 
 	return $translation;
 }, 10, 3 );
+
+/**
+ * Mirror WP locale to qTranslate-XT's current language. Without this,
+ * WP-core strings (Previous, Next, Skip to content), date formatting
+ * (`j. F Y` → "februāris" vs "February"), and comment / form labels
+ * stay fixed at the install locale regardless of which language URL
+ * the user is on. Wired BEFORE the gettext filter so .mo loading sees
+ * the right locale.
+ */
+add_filter( 'locale', function ( $locale ) {
+	if ( function_exists( 'qtranxf_getLanguage' ) ) {
+		$lang = qtranxf_getLanguage();
+		if ( 'en' === $lang ) {
+			return 'en_US';
+		}
+		if ( 'lv' === $lang ) {
+			return 'lv';
+		}
+	}
+	return $locale;
+}, 100, 1 ); // priority 100 to override qtranslate-xt's qtranxf_localeForCurrentLanguage at 99
+
+/*
+ * NOTE: qTranslate-XT 3.16.1 Slugs-module / → /lv/ redirect-loop fix lives
+ * in wp-content/mu-plugins/qtranslate-loop-fix.php — it MUST be loaded
+ * before qtranslate-xt's plugins_loaded:2 hook fires, which is too early
+ * for theme functions.php (themes load after plugins_loaded action).
+ */
+
+/**
+ * WP boots `load_default_textdomain()` BEFORE the theme + sometimes
+ * before qTranslate-XT settles the language for the request — the
+ * default domain ends up loaded under en_US even though the URL is /
+ * (LV). Forcing a reload at `after_setup_theme` re-runs the loader
+ * with the now-correct locale so WP-core strings ("Next &raquo;",
+ * "&laquo; Previous", "Skip to content" via parent theme, date i18n)
+ * pick up lv.mo on the LV side and stay en_US on /en/.
+ */
+add_action( 'after_setup_theme', function () {
+	if ( ! function_exists( 'qtranxf_getLanguage' ) ) {
+		return;
+	}
+	unload_textdomain( 'default' );
+	load_default_textdomain();
+}, 99 );
+
+/**
+ * Floating language switcher — a circular control stacked directly ABOVE the
+ * dark/light toggle, in the same bottom-right floating area, on EVERY view
+ * (wp_footer). Replaces the former primary-menu language item (which appended
+ * a `<li class="menu-language-switcher">`): same proven URL logic, new theme-
+ * native presentation. Shows the TARGET language code — EN on Latvian pages,
+ * LV on English — monochrome + typographic to mirror the sun/moon toggle.
+ * CSS positions it: see [data-lang-switch] in style.css.
+ */
+function ignites_child_render_lang_switch() {
+	if ( ! function_exists( 'qtranxf_getLanguage' ) || ! function_exists( 'qtranxf_convertURL' ) ) {
+		return;
+	}
+	$current = qtranxf_getLanguage();
+	$other   = ( 'lv' === $current ) ? 'en' : 'lv';
+	// Empty URL → qtranxf_convertURL uses the current request context and runs the
+	// qtranslate_convert_url (Slugs) filter for correct slug translation; passing an
+	// explicit URL bypasses the slug lookup and returns /en/tema/podkasts/ instead of
+	// /en/tema/podcast/ (#226). This is the URL form the old menu switcher used and
+	// that the operator confirmed switched language correctly.
+	$target = qtranxf_convertURL( '', $other, false, false );
+	// qtranxf strips the trailing slash from path-mode roots; our permalink structure
+	// forces trailing slashes, so normalise once here to avoid a canonical 301 per click.
+	$parsed = wp_parse_url( $target );
+	if ( $parsed ) {
+		$path   = ! empty( $parsed['path'] ) ? trailingslashit( $parsed['path'] ) : '/';
+		$target = ( isset( $parsed['scheme'] ) ? $parsed['scheme'] . '://' : '' )
+		        . ( isset( $parsed['host'] ) ? $parsed['host'] : '' )
+		        . $path
+		        . ( isset( $parsed['query'] ) ? '?' . $parsed['query'] : '' )
+		        . ( isset( $parsed['fragment'] ) ? '#' . $parsed['fragment'] : '' );
+	}
+	// aria-label authored in the CURRENT page language (offer the other language).
+	$label = ( 'en' === $other )
+		? __( 'Pārslēgt uz angļu valodu', 'ignites-child' )
+		: __( 'Switch to Latvian', 'ignites-child' );
+	// rel="noreferrer": navigating to the slug-free default-language root "/" otherwise
+	// leaks a cross-language Referer that qTranslate's Slugs module uses to keep the
+	// prior language (infra-docs#257) — suppressing it lets "/" resolve to default LV.
+	printf(
+		'<a data-lang-switch href="%s" hreflang="%s" rel="noreferrer" aria-label="%s"><span aria-hidden="true">%s</span></a>',
+		esc_url( $target ),
+		esc_attr( $other ),
+		esc_attr( $label ),
+		esc_html( strtoupper( $other ) )
+	);
+}
+add_action( 'wp_footer', 'ignites_child_render_lang_switch', 1 );
 
 /**
  * Preload the two render-critical font files (Cormorant Garamond latin
