@@ -456,3 +456,83 @@ function ignites_child_customize_register( $wp_customize ) {
 	}
 }
 add_action( 'customize_register', 'ignites_child_customize_register' );
+
+/**
+ * Set of category term_ids that have at least one EN-available post. Sibling of
+ * the hide-untranslated archive filter (infra-docs#226): reuses the same
+ * qtranxf_getAvailableLanguages() availability check but caches at CATEGORY
+ * granularity in a 5-minute transient, so the nav (rendered on every page) never
+ * re-scans all posts. Returns [] (→ all EN category items hidden) if qTranslate
+ * is inactive — the EN filter below only runs when qtranxf says we're on /en/.
+ */
+function ignites_child_en_available_categories() {
+	$cats = get_transient( 'ignites_child_en_avail_cats' );
+	if ( false !== $cats ) {
+		return (array) $cats;
+	}
+	$cats = array();
+	if ( function_exists( 'qtranxf_getAvailableLanguages' ) ) {
+		$ids = get_posts( array(
+			'post_type'        => 'post',
+			'post_status'      => 'publish',
+			'numberposts'      => -1,
+			'fields'           => 'ids',
+			'suppress_filters' => true,
+		) );
+		foreach ( $ids as $id ) {
+			$available = qtranxf_getAvailableLanguages( get_post_field( 'post_content', $id ) );
+			if ( in_array( 'en', (array) $available, true ) ) {
+				foreach ( wp_get_post_categories( $id ) as $cat_id ) {
+					$cats[ $cat_id ] = true; // dedupe on key
+				}
+			}
+		}
+		$cats = array_map( 'intval', array_keys( $cats ) );
+	}
+	set_transient( 'ignites_child_en_avail_cats', $cats, 5 * MINUTE_IN_SECONDS );
+	return $cats;
+}
+
+/**
+ * Hide primary-menu CATEGORY items that have no posts in the CURRENT language.
+ * On the EN side, a category whose posts are all LV-only links to an empty
+ * /en/category/<slug>/ page, so its nav item is dropped. LV (the source
+ * language) always shows every item. Home / About-me (non-category) untouched.
+ * wp_nav_menu_objects is a render-time filter → theme-side-safe (infra-docs#257).
+ */
+add_filter( 'wp_nav_menu_objects', function ( $items, $args ) {
+	if ( ! function_exists( 'qtranxf_getLanguage' ) || 'en' !== qtranxf_getLanguage() ) {
+		return $items; // LV / unknown: show everything
+	}
+	if ( ! is_array( $items ) ) {
+		return $items;
+	}
+	$en_cats = ignites_child_en_available_categories();
+	$dropped = array();
+	foreach ( $items as $key => $item ) {
+		if ( isset( $item->type, $item->object ) && 'taxonomy' === $item->type && 'category' === $item->object
+			&& ! in_array( (int) $item->object_id, $en_cats, true ) ) {
+			$dropped[] = (int) $item->ID;
+			unset( $items[ $key ] );
+		}
+	}
+	if ( $dropped ) { // drop children of a removed category item too
+		foreach ( $items as $key => $item ) {
+			if ( isset( $item->menu_item_parent ) && in_array( (int) $item->menu_item_parent, $dropped, true ) ) {
+				unset( $items[ $key ] );
+			}
+		}
+	}
+	return $items;
+}, 10, 2 );
+
+/**
+ * Invalidate the EN-available-categories cache on publish/edit so a newly
+ * translated post re-shows its menu item within one cache cycle.
+ */
+add_action( 'save_post', function ( $post_id ) {
+	if ( wp_is_post_autosave( $post_id ) || wp_is_post_revision( $post_id ) ) {
+		return;
+	}
+	delete_transient( 'ignites_child_en_avail_cats' );
+} );
