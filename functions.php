@@ -432,6 +432,22 @@ function ignites_child_favicon() {
 add_action( 'wp_head', 'ignites_child_favicon', 5 );
 
 /**
+ * Mastodon author attribution (fediverse:creator, Mastodon 4.3+). When a link
+ * to this blog is shared anywhere in the fediverse, the preview card carries a
+ * "More from @ojars@kapteinis.lv" byline. Static tag — single-author blog, so
+ * no per-post logic. Deliberately independent of the ActivityPub plugin, which
+ * stays deactivated (qtranslate-xt URL-filter recursion → OOM, infra-docs#225/
+ * #226, reactivation tracked in infra-docs#357). The handle is public by
+ * definition, so hardcoding it is fine. The other half of the handshake lives
+ * in Mastodon: Preferences → Public profile → Verification → "Websites allowed
+ * to credit you" must list ojars.kapteinis.lv, else the tag is ignored.
+ */
+function ignites_child_fediverse_creator() {
+	echo '<meta name="fediverse:creator" content="@ojars@kapteinis.lv">' . "\n";
+}
+add_action( 'wp_head', 'ignites_child_fediverse_creator', 5 );
+
+/**
  * Cloudflare Web Analytics beacon — privacy-first, COOKIELESS reader counter.
  * Sets no cookies / no localStorage / no cross-site identifier, so it needs no
  * cookie-consent banner. Injected MANUALLY (deferred, in wp_footer) because
