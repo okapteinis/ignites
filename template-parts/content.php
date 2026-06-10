@@ -29,8 +29,11 @@
 		<div class="entry-content">
 			<?php
 			if ( is_home() || is_front_page() || is_search() || is_archive() ) :
+				// get_the_excerpt() (not the_excerpt()) — the_excerpt() emits its own
+				// wpautop <p>, which nested inside ours produced invalid <p><p> markup.
+				// Matches template-parts/content-hero.php.
 				?>
-				<p class="m-0 entry-excerpt"><?php the_excerpt(); ?></p>
+				<p class="entry-excerpt m-0"><?php echo wp_kses_post( get_the_excerpt() ); ?></p>
 				<?php
 			else :
 				the_content(
