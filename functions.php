@@ -72,19 +72,26 @@ function ignites_child_reading_time( $post = null ) {
 		$minutes = max( 1, (int) ceil( $words / 200 ) );
 		update_post_meta( $post->ID, '_ignites_child_reading_minutes', $minutes );
 	}
-	/* translators: %d: estimated reading time in minutes. */
-	return sprintf( _n( '%d min lasīšana', '%d min lasīšana', $minutes, 'ignites-child' ), $minutes );
+	/* translators: %d: estimated reading time in minutes. The string is identical
+	   for every minute count (no LV plural variation), so plain __() is correct —
+	   _n() here only routed the string through the `ngettext` filter, which the
+	   EN gettext map below never sees (the 2026-06-10 i18n-leak root cause). */
+	return sprintf( __( '%d min lasīšana', 'ignites-child' ), $minutes );
 }
 
 /**
- * Invalidate the cached reading-minutes meta on save so edits take
- * effect on next render. Skips revisions/autosaves.
+ * Single save_post invalidation handler: clears the cached reading-minutes
+ * meta AND the EN-availability transients (nav categories + shared id cache)
+ * so edits/translations take effect within one render. Skips revisions and
+ * autosaves. (Merged from two separate closures — same guards, one hook.)
  */
 add_action( 'save_post', function ( $post_id ) {
 	if ( wp_is_post_revision( $post_id ) || wp_is_post_autosave( $post_id ) ) {
 		return;
 	}
 	delete_post_meta( $post_id, '_ignites_child_reading_minutes' );
+	delete_transient( 'ignites_child_en_avail_cats' );
+	delete_transient( 'ignites_child_en_avail_ids' );
 } );
 
 /**
@@ -196,7 +203,9 @@ add_filter( 'gettext', function ( $translation, $text, $domain ) {
 	$is_en = function_exists( 'qtranxf_getLanguage' ) && 'en' === qtranxf_getLanguage();
 
 	// 1. WP-core paginate_links: drop redundant `lapa` from the chevron.
-	if ( false !== strpos( $translation, 'lapa' ) ) {
+	// Gated on the `default` domain — the target strings are WP-core, and the
+	// ungated strpos ran against every string of every domain on every request.
+	if ( 'default' === $domain && false !== strpos( $translation, 'lapa' ) ) {
 		$translation = str_replace(
 			array( 'Nākamā lapa', 'Iepriekšējā lapa' ),
 			array( 'Nākamā', 'Iepriekšējā' ),
@@ -232,6 +241,21 @@ add_filter( 'gettext', function ( $translation, $text, $domain ) {
 		}
 	}
 
+	// 2b. The handful of CHILD theme strings whose source text is English
+	// (WP-core-style strings reused in our templates) → Latvian on the LV
+	// side. Without this they leak English on / (e.g. "Pages:" on paginated
+	// posts). Mirror image of the LV→EN map below.
+	if ( ! $is_en && 'ignites-child' === $domain ) {
+		$child_lv = array(
+			'Pages:' => 'Lapas:',
+			'Continue reading<span class="screen-reader-text"> "%s"</span>'
+				=> 'Turpināt lasīt<span class="screen-reader-text"> "%s"</span>',
+		);
+		if ( isset( $child_lv[ $text ] ) ) {
+			return $child_lv[ $text ];
+		}
+	}
+
 	// 3. Child theme Latvian source strings → English on the EN side.
 	// The strings below live in `__()` calls in Latvian (this theme's
 	// source language is LV) and would render Latvian on /en/ without
@@ -259,24 +283,6 @@ add_filter( 'gettext', function ( $translation, $text, $domain ) {
 
 	return $translation;
 }, 10, 3 );
-
-/**
- * Plural strings go through `ngettext`, NOT `gettext`, so the EN map above never
- * sees them. The theme's only _n() string is the reading-time
- * (`%d min lasīšana`), which without this stays Latvian on /en/. Mirror it here.
- */
-add_filter( 'ngettext', function ( $translation, $single, $plural, $number, $domain ) {
-	if ( 'ignites-child' !== $domain ) {
-		return $translation;
-	}
-	if ( ! function_exists( 'qtranxf_getLanguage' ) || 'en' !== qtranxf_getLanguage() ) {
-		return $translation;
-	}
-	if ( '%d min lasīšana' === $single ) {
-		return '%d min read';
-	}
-	return $translation;
-}, 10, 5 );
 
 /**
  * Translate the displayed CATEGORY name on the EN side (the "SAITES" label above
@@ -537,22 +543,26 @@ function ignites_child_customize_register( $wp_customize ) {
 add_action( 'customize_register', 'ignites_child_customize_register' );
 
 /**
- * Set of category term_ids that have at least one EN-available post. Sibling of
- * the hide-untranslated archive filter (infra-docs#226): reuses the same
- * qtranxf_getAvailableLanguages() availability check but caches at CATEGORY
- * granularity in a 5-minute transient, so the nav (rendered on every page) never
- * re-scans all posts. Returns [] (→ all EN category items hidden) if qTranslate
- * is inactive — the EN filter below only runs when qtranxf says we're on /en/.
+ * IDs of published items of $post_type that have an EN translation, per
+ * qtranxf_getAvailableLanguages(). THE single shared EN-availability scan —
+ * the nav category filter and the EN sitemap provider both build on it (they
+ * previously each ran their own near-identical all-posts loop; the sitemap's
+ * was uncached, so every bot hit of wp-sitemap-en-1.xml rescanned everything).
+ * Cached per post_type in one 5-minute transient; invalidated by the merged
+ * save_post handler above. Returns [] when qTranslate is inactive.
  */
-function ignites_child_en_available_categories() {
-	$cats = get_transient( 'ignites_child_en_avail_cats' );
-	if ( false !== $cats ) {
-		return (array) $cats;
+function ignites_child_en_available_ids( $post_type ) {
+	$cache = get_transient( 'ignites_child_en_avail_ids' );
+	if ( ! is_array( $cache ) ) {
+		$cache = array();
 	}
-	$cats = array();
+	if ( isset( $cache[ $post_type ] ) ) {
+		return (array) $cache[ $post_type ];
+	}
+	$en_ids = array();
 	if ( function_exists( 'qtranxf_getAvailableLanguages' ) ) {
 		$ids = get_posts( array(
-			'post_type'        => 'post',
+			'post_type'        => $post_type,
 			'post_status'      => 'publish',
 			'numberposts'      => -1,
 			'fields'           => 'ids',
@@ -561,13 +571,35 @@ function ignites_child_en_available_categories() {
 		foreach ( $ids as $id ) {
 			$available = qtranxf_getAvailableLanguages( get_post_field( 'post_content', $id ) );
 			if ( in_array( 'en', (array) $available, true ) ) {
-				foreach ( wp_get_post_categories( $id ) as $cat_id ) {
-					$cats[ $cat_id ] = true; // dedupe on key
-				}
+				$en_ids[] = (int) $id;
 			}
 		}
-		$cats = array_map( 'intval', array_keys( $cats ) );
 	}
+	$cache[ $post_type ] = $en_ids;
+	set_transient( 'ignites_child_en_avail_ids', $cache, 5 * MINUTE_IN_SECONDS );
+	return $en_ids;
+}
+
+/**
+ * Set of category term_ids that have at least one EN-available post. Sibling of
+ * the hide-untranslated archive filter (infra-docs#226): derives from the shared
+ * ignites_child_en_available_ids() scan, cached at CATEGORY granularity in its
+ * own 5-minute transient so the nav (rendered on every page) never re-derives.
+ * Returns [] (→ all EN category items hidden) if qTranslate is inactive — the
+ * EN filter below only runs when qtranxf says we're on /en/.
+ */
+function ignites_child_en_available_categories() {
+	$cats = get_transient( 'ignites_child_en_avail_cats' );
+	if ( false !== $cats ) {
+		return (array) $cats;
+	}
+	$cats = array();
+	foreach ( ignites_child_en_available_ids( 'post' ) as $id ) {
+		foreach ( wp_get_post_categories( $id ) as $cat_id ) {
+			$cats[ $cat_id ] = true; // dedupe on key
+		}
+	}
+	$cats = array_map( 'intval', array_keys( $cats ) );
 	set_transient( 'ignites_child_en_avail_cats', $cats, 5 * MINUTE_IN_SECONDS );
 	return $cats;
 }
@@ -604,17 +636,6 @@ add_filter( 'wp_nav_menu_objects', function ( $items, $args ) {
 	}
 	return $items;
 }, 10, 2 );
-
-/**
- * Invalidate the EN-available-categories cache on publish/edit so a newly
- * translated post re-shows its menu item within one cache cycle.
- */
-add_action( 'save_post', function ( $post_id ) {
-	if ( wp_is_post_autosave( $post_id ) || wp_is_post_revision( $post_id ) ) {
-		return;
-	}
-	delete_transient( 'ignites_child_en_avail_cats' );
-} );
 
 /**
  * Canonical English URL for a post/page. The qTranslate Slugs module stores the
@@ -658,23 +679,12 @@ if ( class_exists( 'WP_Sitemaps_Provider' ) ) {
 			$this->object_type = 'en';
 		}
 		public function get_url_list( $page_num, $object_subtype = '' ) {
+			// Shared cached EN-availability scan (ignites_child_en_available_ids):
+			// bots hit sitemaps often, and the previous inline loop rescanned every
+			// post + page body on each request. Returns [] if qTranslate is inactive.
 			$urls = array();
-			if ( ! function_exists( 'qtranxf_getAvailableLanguages' ) ) {
-				return $urls;
-			}
 			foreach ( array( 'post', 'page' ) as $pt ) {
-				$ids = get_posts( array(
-					'post_type'        => $pt,
-					'post_status'      => 'publish',
-					'numberposts'      => -1,
-					'fields'           => 'ids',
-					'suppress_filters' => true,
-				) );
-				foreach ( $ids as $id ) {
-					$available = qtranxf_getAvailableLanguages( get_post_field( 'post_content', $id ) );
-					if ( ! in_array( 'en', (array) $available, true ) ) {
-						continue;
-					}
+				foreach ( ignites_child_en_available_ids( $pt ) as $id ) {
 					$en = ignites_child_canonical_en_url( $id );
 					if ( $en ) {
 						$urls[] = array( 'loc' => $en );
@@ -695,3 +705,51 @@ if ( class_exists( 'WP_Sitemaps_Provider' ) ) {
 		}
 	}, 20 );
 }
+
+// =========================================================================
+// Hide untranslated posts from /en/ archive views (infra-docs#226 close-out).
+// qTranslate-XT shows fallback LV content for posts without an EN translation;
+// this filter excludes those posts from main-query archive listings when
+// browsing in EN, so /en/ shows only posts that have actual English content.
+// Untouched: LV archives, single post views, admin queries, REST/cron.
+//
+// Canonical source: infra-scripts/yuno/patches/wordpress/0001-hide-untranslated-posts.php
+// Re-applied idempotently by weekly-app-updates.sh `_restore_wp_theme_snippet`.
+// =========================================================================
+add_action( 'pre_get_posts', function( $query ) {
+    if ( is_admin() || ! $query->is_main_query() ) return;
+    if ( $query->is_singular() ) return; // single posts: let qTranslate handle LV fallback
+    if ( ! function_exists( 'qtranxf_getAvailableLanguages' ) ) return;
+    if ( ! function_exists( 'qtranxf_getLanguage' ) || qtranxf_getLanguage() !== 'en' ) return;
+
+    // 5-minute transient cache amortises the all-posts scan across archive renders.
+    $untranslated = get_transient( 'ignites_child_en_untranslated' );
+    if ( $untranslated === false ) {
+        $all = get_posts( [
+            'post_type'        => 'post',
+            'post_status'      => 'publish',
+            'numberposts'      => -1,
+            'fields'           => 'ids',
+            'suppress_filters' => true,
+        ] );
+        $untranslated = array_values( array_filter( $all, function( $id ) {
+            $available = qtranxf_getAvailableLanguages( get_post_field( 'post_content', $id ) );
+            return ! in_array( 'en', (array) $available, true );
+        } ) );
+        set_transient( 'ignites_child_en_untranslated', $untranslated, 5 * MINUTE_IN_SECONDS );
+    }
+
+    if ( ! empty( $untranslated ) ) {
+        $query->set( 'post__not_in', $untranslated );
+    }
+} );
+
+// Drop the cache on real publish-post saves only — autosaves, revisions, drafts,
+// nav menu items, attachments, etc. don't change the untranslated set and would
+// invalidate the 5-min transient on every editor keystroke / draft autosave.
+// Without these guards the cache barely amortizes the 449-post scan.
+add_action( 'save_post', function( $post_id ) {
+    if ( wp_is_post_autosave( $post_id ) || wp_is_post_revision( $post_id ) ) return;
+    if ( get_post_type( $post_id ) !== 'post' || get_post_status( $post_id ) !== 'publish' ) return;
+    delete_transient( 'ignites_child_en_untranslated' );
+} );
