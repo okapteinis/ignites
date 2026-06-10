@@ -40,10 +40,10 @@ function ignites_customizer_option( $wp_customize ) {
 
 	$wp_customize->add_setting( 'ignites_sidebar_settings', array(
 		'capability' => 'edit_theme_options',
-		'sanitize_callback' => 'themeslug_sanitize_select',
+		'sanitize_callback' => 'ignites_sanitize_select',
 		'default' => 'right-sidebar',
 	  ) );
-	  
+
 	  $wp_customize->add_control( 'ignites_sidebar_settings', array(
 		'type' => 'select',
 		'section' => 'ignites_sidebar_settings', // Add a default or your own section
@@ -54,17 +54,6 @@ function ignites_customizer_option( $wp_customize ) {
 		  'right-sidebar' => __( 'Right Sidebar','ignites'),
 		),
 	  ) );
-	  
-	  function themeslug_sanitize_select( $input, $setting ) {
-		// Ensure input is a slug.
-		$input = sanitize_key( $input );
-	  
-		// Get list of choices from the control associated with the setting.
-		$choices = $setting->manager->get_control( $setting->id )->choices;
-	  
-		// If the input is a valid key, return it; otherwise, return the default.
-		return ( array_key_exists( $input, $choices ) ? $input : $setting->default );
-	  }
 
 	$wp_customize->add_section('ignites_footer_section', array(
 		'title'    => __('Footer', 'ignites'),
@@ -86,6 +75,17 @@ function ignites_customizer_option( $wp_customize ) {
 
 }
 add_action( 'customize_register', 'ignites_customizer_option' );
+
+/**
+ * Select-control sanitizer: keep the input only if it is one of the control's
+ * declared choices. (Was `themeslug_sanitize_select`, defined INSIDE
+ * ignites_customizer_option with a foreign prefix — renamed + hoisted.)
+ */
+function ignites_sanitize_select( $input, $setting ) {
+	$input   = sanitize_key( $input );
+	$choices = $setting->manager->get_control( $setting->id )->choices;
+	return ( array_key_exists( $input, $choices ) ? $input : $setting->default );
+}
 
 
 

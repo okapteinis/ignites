@@ -7,9 +7,10 @@ function ignites_enqueue_scripts() {
 	// Bootstrap 5.3.8 CSS
 	wp_enqueue_style('bootstrap', get_template_directory_uri().'/assets/css/bootstrap.min.css',[],'5.3.8');
 	wp_enqueue_style('ignites-main-css', get_template_directory_uri().'/assets/css/main.css',[],IGNITES_THEME_VERSION);
-	wp_enqueue_style('ignites-google-font-css', '//fonts.googleapis.com/css?family=Open+Sans:300,400,600,700,800',[],IGNITES_THEME_VERSION);
+	// Google Fonts CDN enqueue removed (privacy: no third-party font requests).
+	// "Open Sans" stacks in main.css fall back to the system sans-serif; child
+	// themes are expected to supply their own (self-hosted) font tokens.
 	wp_enqueue_style('linearicons', get_template_directory_uri().'/assets/css/linearicons.css',[],IGNITES_THEME_VERSION);
-	wp_enqueue_style('ignites-editor-css', get_template_directory_uri().'/assets/css/style-editor.css',[],IGNITES_THEME_VERSION);
 	wp_enqueue_style('ignites-style', get_stylesheet_uri());
 
 	// jQuery (required for main.js scroll-to-top functionality)
@@ -42,5 +43,8 @@ add_action( 'wp_head', 'ignites_preload_fonts', 1 );
 
 function ignites_block_editor_styles() {
 	wp_enqueue_style( 'ignites-block-editor-styles', get_template_directory_uri() . '/block-editor.css', [],IGNITES_THEME_VERSION);
+	// style-editor.css moved here from the frontend enqueue — it styles the
+	// EDITOR; shipping its 720 lines to every visitor was pure dead weight.
+	wp_enqueue_style( 'ignites-editor-css', get_template_directory_uri() . '/assets/css/style-editor.css', [], IGNITES_THEME_VERSION );
 }
 add_action( 'enqueue_block_editor_assets', 'ignites_block_editor_styles' );

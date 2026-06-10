@@ -52,7 +52,7 @@ get_header();
                                         <?php ignites_posted_by(); ?>
                                     </h2>
                                     <p>
-                                        <?php echo esc_html(the_author_meta('description')); ?>
+                                        <?php echo esc_html(get_the_author_meta('description')); /* the_author_meta() ECHOES unescaped and returns void — esc_html() was a no-op */ ?>
                                     </p>
                                 </div>
                             </div>

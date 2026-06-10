@@ -31,10 +31,9 @@ $ignites_comments_number = get_comments_number();
 
         <h2 class="comments-title">
 			<?php
-			$ignites_comments_number = get_comments_number();
 			if ( '1' === $ignites_comments_number ) {
 				/* translators: %s: post title */
-				printf( esc_html( 'One thought on &ldquo;%s&rdquo;', 'comments title', 'ignites' ), get_the_title() );
+				printf( esc_html_x( 'One thought on "%s"', 'comments title', 'ignites' ), esc_html( get_the_title() ) );
 			} else {
 				printf(
 				/* translators: 1: number of comments, 2: post title */

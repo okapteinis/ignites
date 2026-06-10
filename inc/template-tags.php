@@ -39,7 +39,8 @@ if ( ! function_exists( 'ignites_entry_footer' ) ) :
 		// Hide category and tag text for pages.
 		if ( 'post' === get_post_type() ) {
 			if (is_single()) {
-				echo wp_kses_post ( get_the_tag_list( '<span class="tags-links"><b>Tags:</b> ', ',', '</span>' ));
+				/* translators: label before the post's tag list */
+				echo wp_kses_post ( get_the_tag_list( '<span class="tags-links"><b>' . esc_html__( 'Tags:', 'ignites' ) . '</b> ', ',', '</span>' ));
 			}else{
 				echo '<div class="wrap-entry-meta">';
 				echo '<div class="entry-avatar">'.get_avatar( get_the_author_meta( 'ID' ), 55 ).'</div>';
