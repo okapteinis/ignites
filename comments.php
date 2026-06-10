@@ -45,7 +45,7 @@ $ignites_comments_number = get_comments_number();
 						'ignites'
 					),
 					esc_html(number_format_i18n( $ignites_comments_number )),
-					get_the_title()
+					esc_html( get_the_title() )
 				);
 			}
 			?>
