@@ -21,6 +21,16 @@
 </head>
 
 <body <?php body_class(); ?>>
+<?php
+// wp_body_open belongs here, immediately after <body>, so it fires on EVERY
+// template — it previously lived in index.php only, so singular pages and
+// archives never got it (child themes had to fall back to wp_footer).
+if ( function_exists( 'wp_body_open' ) ) {
+	wp_body_open();
+} else {
+	do_action( 'wp_body_open' );
+}
+?>
 <div id="page" class="site">
 	<a class="skip-link screen-reader-text" href="#content"><?php esc_html_e( 'Skip to content', 'ignites' ); ?></a>
     <div class="header-section">

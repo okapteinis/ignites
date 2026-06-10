@@ -48,7 +48,8 @@ if (!function_exists('ignites_post_comment')) :
 							<div class="card-header">
 								<div class="div">
 									<?php /* translators: %s: author name*/ ?>
-									<h4 class="mt-0"><?php printf(wp_kses('%s <span class="says">says:</span>', 'ignites'), sprintf('<cite class="fn">%s</cite>', get_comment_author_link(), 'ignites')); ?></h4>
+									<?php /* translators: %s: comment author link */ ?>
+									<h4 class="mt-0"><?php printf(wp_kses(__('%s <span class="says">says:</span>', 'ignites'), array('span' => array('class' => array()))), sprintf('<cite class="fn">%s</cite>', get_comment_author_link())); ?></h4>
 									<div class="comment-meta">
 										<a href="<?php echo esc_url(get_comment_link($comment->comment_ID)); ?>">
 											<time datetime="<?php comment_time('c'); ?>">
@@ -75,7 +76,7 @@ if (!function_exists('ignites_post_comment')) :
 							</div>
 
 							<?php if ('0' === $comment->comment_approved) : ?>
-								<p class="comment-awaiting-moderation"><?php esc_attr('Your comment is awaiting moderation.', 'ignites'); ?></p>
+								<p class="comment-awaiting-moderation"><?php esc_html_e('Your comment is awaiting moderation.', 'ignites'); /* was esc_attr() — returns without echoing, the notice never rendered */ ?></p>
 							<?php endif; ?>
 
 							<div class="comment-content card-block">
@@ -101,7 +102,8 @@ if (!function_exists('ignites_post_comment')) :
 
 							<div class="card-header">
 								<div class="div">
-									<h4 class="mt-0"><?php printf(wp_kses('%s <span class="says">says:</span>', 'ignites'), sprintf('<cite class="fn">%s</cite>', get_comment_author_link())); ?></h4>
+									<?php /* translators: %s: comment author link */ ?>
+								<h4 class="mt-0"><?php printf(wp_kses(__('%s <span class="says">says:</span>', 'ignites'), array('span' => array('class' => array()))), sprintf('<cite class="fn">%s</cite>', get_comment_author_link())); ?></h4>
 									<div class="comment-meta">
 										<a href="<?php echo esc_url(get_comment_link($comment->comment_ID)); ?>">
 											<time datetime="<?php comment_time('c'); ?>">

@@ -33,8 +33,11 @@
         <div class="entry-content">
 		    <?php
 
-		    if(is_home()|| is_front_page()|| is_search() || is_archive()){?>
-                <p class="m-0"><?php the_excerpt(); ?></p>
+		    if(is_home()|| is_front_page()|| is_search() || is_archive()){
+			    // get_the_excerpt() (not the_excerpt()) — the_excerpt() emits its own
+			    // wpautop <p>, which nested inside ours produced invalid <p><p> markup.
+			    ?>
+                <p class="m-0"><?php echo wp_kses_post( get_the_excerpt() ); ?></p>
 			    <?php
 		    }else{
 			    the_content( sprintf(

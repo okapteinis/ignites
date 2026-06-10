@@ -19,9 +19,9 @@ get_header();
 				?>
                 <div class="<?php ignites_layout_option();?>">
                     <div id="primary" class="content-area">
+                        <!-- duplicate nested #primary/#main landmarks removed (invalid
+                             duplicate IDs; the outer <main> was also left unclosed) -->
                         <main id="main" class="site-main">
-                            <section id="primary" class="content-area">
-                                <main id="main" class="site-main">
 									<?php if ( have_posts() ) : ?>
                                         <header class="page-header">
                                             <h1 class="page-title">
@@ -49,8 +49,7 @@ get_header();
 										get_template_part( 'template-parts/content', 'none' );
 									endif;
 									?>
-                                </main><!-- #main -->
-                            </section>
+                        </main><!-- #main -->
                     </div>
                 </div>
 				<?php 
