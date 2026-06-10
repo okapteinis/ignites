@@ -652,7 +652,17 @@ function ignites_child_canonical_en_url( $id ) {
 	$path    = isset( $parts['path'] ) ? $parts['path'] : '/';
 	$en_slug = get_post_meta( $id, 'qtranslate_slug_en', true );
 	if ( ! empty( $en_slug ) ) {
-		$path = preg_replace( '#/[^/]+/?$#', '/' . $en_slug . '/', $path );
+		// Callback, NOT a replacement string: `$`/`\` in the meta value would be
+		// parsed as backreferences by preg_replace's replacement parser.
+		// (preg_quote() is wrong here — it escapes PATTERN metacharacters and
+		// would render literally in a replacement.)
+		$path = preg_replace_callback(
+			'#/[^/]+/?$#',
+			function () use ( $en_slug ) {
+				return '/' . $en_slug . '/';
+			},
+			$path
+		);
 	}
 	$scheme = isset( $parts['scheme'] ) ? $parts['scheme'] : 'https';
 	return $scheme . '://' . $parts['host'] . '/en' . $path;
