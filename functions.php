@@ -448,6 +448,26 @@ function ignites_child_fediverse_creator() {
 add_action( 'wp_head', 'ignites_child_fediverse_creator', 5 );
 
 /**
+ * Front-page meta description (SEO). No SEO plugin is installed, so this is the
+ * single homepage <meta name="description">. Bilingual: the string carries both
+ * languages and qTranslate-XT extracts the active one via qtranxf_use() +
+ * qtranxf_getLanguage() (the old qtranxf_isAvailableIn is gone in 3.16.x — see
+ * INFRA_REF §10). Front page only; per-post descriptions are a separate follow-up.
+ * Fixes the PageSpeed/Lighthouse "Document does not have a meta description" (SEO 91).
+ */
+function ignites_child_meta_description() {
+	if ( ! is_front_page() && ! is_home() ) {
+		return;
+	}
+	$desc = '[:lv]Ojāra Kapteiņa blogs par self-hosting, decentralizēto tīmekli un mākslīgo intelektu, politiku un reliģiju, kā arī ikdienas saišu apkopojumi. 🇪🇺 Europe, Rīga.[:en]Ojārs Kapteinis\'s blog about self-hosting, the decentralized web and AI, politics and religion, plus daily link digests. 🇪🇺 Europe, Rīga.[:]';
+	if ( function_exists( 'qtranxf_use' ) && function_exists( 'qtranxf_getLanguage' ) ) {
+		$desc = qtranxf_use( qtranxf_getLanguage(), $desc, false );
+	}
+	echo '<meta name="description" content="' . esc_attr( $desc ) . '">' . "\n";
+}
+add_action( 'wp_head', 'ignites_child_meta_description', 3 );
+
+/**
  * Cloudflare Web Analytics beacon — privacy-first, COOKIELESS reader counter.
  * Sets no cookies / no localStorage / no cross-site identifier, so it needs no
  * cookie-consent banner. Injected MANUALLY (deferred, in wp_footer) because
