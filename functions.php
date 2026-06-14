@@ -46,86 +46,123 @@ function ignites_child_enqueue() {
 }
 add_action( 'wp_enqueue_scripts', 'ignites_child_enqueue', 20 );
 
-/**
- * Perf: drop the duplicate child stylesheet request. The PARENT theme
- * (ignites-nightly/inc/ignites_styles_scripts.php) enqueues get_stylesheet_uri()
- * under handle 'ignites-style' — which resolves to the CHILD style.css, already
- * loaded above as 'ignites-child' (mtime-versioned, parent-dependent). That made
- * the homepage request child/style.css twice (?ver=cp_… and ?ver=<mtime>), an
- * extra render-blocking CSS round-trip flagged by Lighthouse. Dequeue the
- * redundant copy at a late priority (after the parent has registered it).
- */
-add_action( 'wp_enqueue_scripts', function () {
-	wp_dequeue_style( 'ignites-style' );
-	wp_deregister_style( 'ignites-style' );
-}, 99 );
+/* ============================================================================
+ * Performance — critical-path trimming (ignites#30 + #31)
+ * ----------------------------------------------------------------------------
+ * Strategy (verified against this site, behind Cloudflare APO):
+ *   1. Drop a duplicate render-blocking stylesheet request.
+ *   2. Defer all jQuery + drop unused Bootstrap JS from the head.
+ *   3. Stop misdirecting the browser's LCP hint onto post thumbnails.
+ *   4. Inline the above-the-fold critical CSS and async-load the 33 KB Bootstrap
+ *      stylesheet, so first paint isn't render-blocked by it.
+ * Each step is its own named function (unhookable + unit-testable) hooked below.
+ * ========================================================================== */
 
 /**
- * Perf (ignites#30): trim the critical path.
+ * Drop the duplicate child stylesheet request. The PARENT theme
+ * (ignites-nightly/inc/ignites_styles_scripts.php) enqueues get_stylesheet_uri()
+ * under handle 'ignites-style' — which resolves to the CHILD style.css, already
+ * loaded as 'ignites-child' (mtime-versioned, parent-dependent). That made the
+ * homepage request child/style.css twice (?ver=cp_… and ?ver=<mtime>), an extra
+ * render-blocking round-trip flagged by Lighthouse. Dequeue the redundant copy at
+ * a late priority (after the parent has registered it). Safe: nothing attaches
+ * inline styles to 'ignites-style' and its only other reference (jetpack
+ * content-options) is inert — Jetpack is not active.
+ */
+function ignites_child_dequeue_duplicate_style() {
+	wp_dequeue_style( 'ignites-style' );
+	wp_deregister_style( 'ignites-style' );
+}
+add_action( 'wp_enqueue_scripts', 'ignites_child_dequeue_duplicate_style', 99 );
+
+/**
+ * Defer scripts out of the render-blocking <head>:
  * - jQuery → footer. The parent enqueues 'jquery' in <head>, but its only consumer
  *   (ignites-main-js) is already footer-enqueued, and nothing in <head> uses jQuery
  *   (navigation.js / skip-link / the inline head scripts = 0 jQuery refs). Moving the
- *   core/migrate files to the footer group un-blocks ~1.3 s of head render. WP pulls
- *   jQuery back to <head> automatically IFF a plugin head-script declares it as a dep,
- *   so worst case is a no-op, never breakage.
+ *   meta handle + core + migrate to the footer group un-blocks ~1.3 s of head render.
+ *   WP pulls jQuery back to <head> automatically IFF a plugin head-script declares it
+ *   as a dependency, so the worst case is a no-op, never breakage.
  * - bootstrap-bundle JS is unused: no template uses Bootstrap data attributes
- *   (collapse, dropdown, modal, navbar-toggler) and main.js never calls Bootstrap JS.
- *   Dequeue it (it was footer, so this is a pure byte/request saving, not render-block).
+ *   (collapse, dropdown, modal, navbar-toggler — the menu toggle is navigation.js) and
+ *   main.js never calls Bootstrap JS. Dequeue it (it was footer, so this is a pure
+ *   byte/request saving, not a render-block fix).
  */
-add_action( 'wp_enqueue_scripts', function () {
+function ignites_child_defer_scripts() {
 	wp_script_add_data( 'jquery', 'group', 1 );
 	wp_script_add_data( 'jquery-core', 'group', 1 );
 	wp_script_add_data( 'jquery-migrate', 'group', 1 );
 	wp_dequeue_script( 'bootstrap-bundle' );
 	wp_deregister_script( 'bootstrap-bundle' );
-}, 99 );
+}
+add_action( 'wp_enqueue_scripts', 'ignites_child_defer_scripts', 99 );
 
 /**
- * Perf (ignites#30): drop WP core's auto fetchpriority=high on post images.
- * Core tags the first content image as its LCP guess, but our real LCP is the CSS
- * masthead (header ::before) — preloaded separately. So the hint is misdirected on a
- * below-the-fold, lazy-loaded thumbnail. Keep loading=lazy; just remove fetchpriority.
+ * Drop WP core's auto fetchpriority=high from attachment images. Core tags the first
+ * content image as its LCP guess, but our real LCP is the CSS masthead (header
+ * ::before) — preloaded separately in the no-flash script. So the hint is misdirected
+ * on below-the-fold, lazy-loaded images. Applies to every attachment image (the blog
+ * has no content-image LCP); loading=lazy is preserved.
+ *
+ * @param array $attr Attachment <img> attributes.
+ * @return array
  */
-add_filter( 'wp_get_attachment_image_attributes', function ( $attr ) {
+function ignites_child_strip_image_fetchpriority( $attr ) {
 	unset( $attr['fetchpriority'] );
 	return $attr;
-}, 20 );
+}
+add_filter( 'wp_get_attachment_image_attributes', 'ignites_child_strip_image_fetchpriority', 20 );
 
 /**
- * Perf (ignites#31): take the 33 KB / 97%-unused bootstrap.min.css off the render-
- * blocking critical path.
- *
- * The blog HTML is already ~11 KB br — inside Cloudflare's measured ~33 KB edge first
- * flight — so first paint is gated not by bytes but by render-blocking CSS, of which
- * bootstrap.min.css is by far the largest. We inline the Bootstrap GRID subset (grid +
- * the handful of flex/display/text utilities the templates use above the fold) so the
- * layout is correct from the first paint, then load the full bootstrap.min.css
- * non-blocking (media=print → swap to all on load) with a <noscript> fallback for JS-off
- * clients. Theme sheets (main.css / child / nightly / linearicons) stay render-blocking —
- * they carry the masthead/nav/typography, so the only thing that could FOUC is the
- * Bootstrap grid, which the inline subset covers.
+ * Inline the above-the-fold critical CSS (Bootstrap grid + used flex/display/text
+ * utilities; see assets/css/critical.css) so the layout is correct from first paint
+ * even while bootstrap.min.css loads asynchronously (see below). The blog HTML is
+ * already ~11 KB br — inside Cloudflare's measured ~33 KB edge first flight — so first
+ * paint is gated by render-blocking CSS, not bytes. is_readable() guards a fatal if
+ * the file is ever missing.
  */
-add_action( 'wp_head', function () {
+function ignites_child_inline_critical_css() {
 	$crit = get_stylesheet_directory() . '/assets/css/critical.css';
 	if ( is_readable( $crit ) ) {
 		echo "<style id=\"ignites-critical-css\">\n" . file_get_contents( $crit ) . "\n</style>\n";
 	}
-}, 2 );
+}
+add_action( 'wp_head', 'ignites_child_inline_critical_css', 2 );
 
-add_filter( 'style_loader_tag', function ( $html, $handle ) {
+/**
+ * Take the 33 KB / 97%-unused bootstrap.min.css off the render-blocking path: render
+ * its <link> with media=print and swap to media=all once downloaded, with a <noscript>
+ * fallback so JS-off clients still get it. The grid stays correct meanwhile because the
+ * critical subset is inlined above. Theme sheets (main.css / child / nightly /
+ * linearicons) stay render-blocking — they carry the masthead/nav/typography, so the
+ * only thing that could FOUC is the Bootstrap grid, which the inline subset covers.
+ *
+ * The media match tolerates single- OR double-quoted media="all" (WP/CP render style
+ * may differ); if no recognisable media attribute is present the tag is returned
+ * unchanged (still render-blocking, but never double-loaded).
+ *
+ * @param string $html  The <link> tag markup.
+ * @param string $handle Registered style handle.
+ * @return string
+ */
+function ignites_child_async_bootstrap_css( $html, $handle ) {
 	if ( 'bootstrap' !== $handle ) {
 		return $html;
 	}
-	// Async-load: render with media=print, swap to all once downloaded; keep a plain
-	// stylesheet inside <noscript> so JS-disabled clients still get Bootstrap.
 	$async = preg_replace(
-		"/ media='all'/",
-		" media='print' onload=\"this.media='all'\"",
+		'/ media=([\'"])all\1/',
+		' media=${1}print${1} onload="this.media=\'all\'"',
 		$html,
 		1
 	);
-	return $async . "<noscript>" . $html . "</noscript>\n";
-}, 10, 2 );
+	// No recognisable media attribute → leave the tag render-blocking rather than
+	// emit a render-blocking copy AND a duplicate <noscript> copy.
+	if ( null === $async || $async === $html ) {
+		return $html;
+	}
+	return $async . '<noscript>' . $html . "</noscript>\n";
+}
+add_filter( 'style_loader_tag', 'ignites_child_async_bootstrap_css', 10, 2 );
 
 /**
  * Estimate reading time in Latvian. Returns a localized string like "5 min lasīšana".
