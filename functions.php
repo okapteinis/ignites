@@ -61,6 +61,37 @@ add_action( 'wp_enqueue_scripts', function () {
 }, 99 );
 
 /**
+ * Perf (ignites#30): trim the critical path.
+ * - jQuery → footer. The parent enqueues 'jquery' in <head>, but its only consumer
+ *   (ignites-main-js) is already footer-enqueued, and nothing in <head> uses jQuery
+ *   (navigation.js / skip-link / the inline head scripts = 0 jQuery refs). Moving the
+ *   core/migrate files to the footer group un-blocks ~1.3 s of head render. WP pulls
+ *   jQuery back to <head> automatically IFF a plugin head-script declares it as a dep,
+ *   so worst case is a no-op, never breakage.
+ * - bootstrap-bundle JS is unused: no template uses Bootstrap data attributes
+ *   (collapse, dropdown, modal, navbar-toggler) and main.js never calls Bootstrap JS.
+ *   Dequeue it (it was footer, so this is a pure byte/request saving, not render-block).
+ */
+add_action( 'wp_enqueue_scripts', function () {
+	wp_script_add_data( 'jquery', 'group', 1 );
+	wp_script_add_data( 'jquery-core', 'group', 1 );
+	wp_script_add_data( 'jquery-migrate', 'group', 1 );
+	wp_dequeue_script( 'bootstrap-bundle' );
+	wp_deregister_script( 'bootstrap-bundle' );
+}, 99 );
+
+/**
+ * Perf (ignites#30): drop WP core's auto fetchpriority=high on post images.
+ * Core tags the first content image as its LCP guess, but our real LCP is the CSS
+ * masthead (header ::before) — preloaded separately. So the hint is misdirected on a
+ * below-the-fold, lazy-loaded thumbnail. Keep loading=lazy; just remove fetchpriority.
+ */
+add_filter( 'wp_get_attachment_image_attributes', function ( $attr ) {
+	unset( $attr['fetchpriority'] );
+	return $attr;
+}, 20 );
+
+/**
  * Estimate reading time in Latvian. Returns a localized string like "5 min lasīšana".
  *
  * @param int|WP_Post|null $post Post ID, object, or null for current.

@@ -66,7 +66,7 @@ Text Domain:  ignites-child
 
   --color-text:           #28251d;
   --color-text-muted:     #6b6860;
-  --color-text-faint:     #7a7770; /* WCAG AA: ~4.6:1 on --color-bg #f7f5f1 (closes #5) */
+  --color-text-faint:     #706d66; /* WCAG AA 4.78:1 on --color-bg #f7f5f1 — #7a7770 was actually ~4.1:1, failing (ignites#30) */
   --color-text-inverse:   #f9f8f4;
 
   --color-primary:           #01696f;
