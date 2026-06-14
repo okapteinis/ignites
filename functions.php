@@ -114,12 +114,13 @@ function ignites_child_strip_image_fetchpriority( $attr ) {
 add_filter( 'wp_get_attachment_image_attributes', 'ignites_child_strip_image_fetchpriority', 20 );
 
 /**
- * Inline the above-the-fold critical CSS (Bootstrap grid + used flex/display/text
- * utilities; see assets/css/critical.css) so the layout is correct from first paint
- * even while bootstrap.min.css loads asynchronously (see below). The blog HTML is
- * already ~11 KB br — inside Cloudflare's measured ~33 KB edge first flight — so first
- * paint is gated by render-blocking CSS, not bytes. is_readable() guards a fatal if
- * the file is ever missing.
+ * Inline the above-the-fold critical CSS (assets/css/critical.css: Bootstrap grid + the
+ * theme's masthead/nav/typography/cards/@font-face/:root tokens, union light+dark) so the
+ * full above-the-fold renders correctly from first paint while EVERY external stylesheet
+ * — Bootstrap + the 4 theme sheets — loads asynchronously (see the async filter below).
+ * Document stays ~16 KB br, inside Cloudflare's measured ~33 KB edge first flight, so the
+ * critical render path is one self-contained response. is_readable() guards a fatal if the
+ * file is ever missing.
  */
 function ignites_child_inline_critical_css() {
 	$crit = get_stylesheet_directory() . '/assets/css/critical.css';
@@ -130,23 +131,28 @@ function ignites_child_inline_critical_css() {
 add_action( 'wp_head', 'ignites_child_inline_critical_css', 2 );
 
 /**
- * Take the 33 KB / 97%-unused bootstrap.min.css off the render-blocking path: render
- * its <link> with media=print and swap to media=all once downloaded, with a <noscript>
- * fallback so JS-off clients still get it. The grid stays correct meanwhile because the
- * critical subset is inlined above. Theme sheets (main.css / child / nightly /
- * linearicons) stay render-blocking — they carry the masthead/nav/typography, so the
- * only thing that could FOUC is the Bootstrap grid, which the inline subset covers.
+ * Take the render-blocking stylesheets off the critical path (ignites#31 + #32). Each
+ * listed <link> is rendered with media=print and swapped to media=all on load, with a
+ * <noscript> fallback so JS-off clients still get it. First paint is driven entirely by
+ * the inlined critical CSS above (Bootstrap grid + the theme's above-fold masthead/nav/
+ * typography/cards/@font-face/:root tokens), so none of these need to block render.
  *
- * The media match tolerates single- OR double-quoted media="all" (WP/CP render style
- * may differ); if no recognisable media attribute is present the tag is returned
- * unchanged (still render-blocking, but never double-loaded).
+ * Handles async'd:
+ *   - bootstrap        (33 KB, 97% unused — #31)
+ *   - ignites-main-css, linearicons, ignites-parent, ignites-child (the 4 theme sheets
+ *     responsible for the 1090 ms LCP render-delay measured in the PageSpeed report — #32)
  *
- * @param string $html  The <link> tag markup.
+ * The media match tolerates single- OR double-quoted media="all" (WP/CP render style may
+ * differ); if no recognisable media attribute is present the tag is returned unchanged
+ * (still render-blocking, but never double-loaded).
+ *
+ * @param string $html   The <link> tag markup.
  * @param string $handle Registered style handle.
  * @return string
  */
-function ignites_child_async_bootstrap_css( $html, $handle ) {
-	if ( 'bootstrap' !== $handle ) {
+function ignites_child_async_noncritical_css( $html, $handle ) {
+	$async_handles = array( 'bootstrap', 'ignites-main-css', 'linearicons', 'ignites-parent', 'ignites-child' );
+	if ( ! in_array( $handle, $async_handles, true ) ) {
 		return $html;
 	}
 	$async = preg_replace(
@@ -162,7 +168,104 @@ function ignites_child_async_bootstrap_css( $html, $handle ) {
 	}
 	return $async . '<noscript>' . $html . "</noscript>\n";
 }
-add_filter( 'style_loader_tag', 'ignites_child_async_bootstrap_css', 10, 2 );
+add_filter( 'style_loader_tag', 'ignites_child_async_noncritical_css', 10, 2 );
+
+/**
+ * Defer theme + jQuery scripts (ignites#32). ClassicPress 6.2.9 predates the WP 6.3
+ * `strategy` enqueue arg, so the defer attribute is added via the loader-tag filter.
+ * defer preserves execution order, so jquery-core → jquery-migrate → ignites-main-js
+ * still run in dependency order. The inline no-flash/theme head script is unaffected
+ * (inline, uses no jQuery), and comment-reply is left alone.
+ *
+ * @param string $tag    The <script> tag markup.
+ * @param string $handle Registered script handle.
+ * @return string
+ */
+function ignites_child_defer_script_tags( $tag, $handle ) {
+	$defer = array( 'jquery-core', 'jquery-migrate', 'ignites-navigation', 'ignites-skip-link-focus-fix', 'ignites-main-js' );
+	if ( in_array( $handle, $defer, true ) && false === strpos( $tag, ' defer' ) && false !== strpos( $tag, ' src=' ) ) {
+		$tag = str_replace( ' src=', ' defer src=', $tag );
+	}
+	return $tag;
+}
+add_filter( 'script_loader_tag', 'ignites_child_defer_script_tags', 10, 2 );
+
+/**
+ * Serve WebP for uploaded images (ignites#32, no plugin — CF Polish is Pro-only). For
+ * every generated size we write a .webp sibling (on upload + a one-shot backfill for
+ * existing images) and wrap the rendered featured-image <img> in <picture> with a webp
+ * <source> + the original as fallback. Uses GD imagewebp() (present on yuno).
+ *
+ * @param string $path Absolute image path.
+ * @return void
+ */
+function ignites_child_make_webp_sibling( $path ) {
+	if ( ! is_string( $path ) || ! is_readable( $path ) || ! function_exists( 'imagewebp' ) ) {
+		return;
+	}
+	$webp = preg_replace( '/\.(png|jpe?g)$/i', '.webp', $path );
+	if ( $webp === $path || file_exists( $webp ) ) {
+		return;
+	}
+	$ext = strtolower( pathinfo( $path, PATHINFO_EXTENSION ) );
+	$img = ( 'png' === $ext ) ? @imagecreatefrompng( $path ) : @imagecreatefromjpeg( $path );
+	if ( ! $img ) {
+		return;
+	}
+	if ( 'png' === $ext ) {
+		imagepalettetotruecolor( $img );
+		imagealphablending( $img, true );
+		imagesavealpha( $img, true );
+	}
+	@imagewebp( $img, $webp, 82 );
+	imagedestroy( $img );
+}
+
+add_filter( 'wp_generate_attachment_metadata', function ( $metadata, $attachment_id ) {
+	$file = get_attached_file( $attachment_id );
+	if ( $file ) {
+		ignites_child_make_webp_sibling( $file );
+		if ( ! empty( $metadata['sizes'] ) ) {
+			$dir = trailingslashit( dirname( $file ) );
+			foreach ( $metadata['sizes'] as $size ) {
+				if ( ! empty( $size['file'] ) ) {
+					ignites_child_make_webp_sibling( $dir . $size['file'] );
+				}
+			}
+		}
+	}
+	return $metadata;
+}, 10, 2 );
+
+/**
+ * Wrap a rendered attachment <img> in <picture> with a webp <source>, but only when the
+ * .webp sibling actually exists on disk (so a failed conversion never serves a broken
+ * source). Skips tags already inside a <picture>.
+ *
+ * @param string $html Image HTML.
+ * @return string
+ */
+function ignites_child_wrap_img_webp( $html ) {
+	if ( false === strpos( $html, '<img' ) || false !== strpos( $html, '<picture' ) ) {
+		return $html;
+	}
+	$uploads = wp_upload_dir();
+	return preg_replace_callback(
+		'/<img\b[^>]*\bsrc=["\']([^"\']+\.(?:png|jpe?g))["\'][^>]*>/i',
+		function ( $m ) use ( $uploads ) {
+			$src       = $m[1];
+			$webp_url  = preg_replace( '/\.(png|jpe?g)$/i', '.webp', $src );
+			$webp_path = preg_replace( '/\.(png|jpe?g)$/i', '.webp', str_replace( $uploads['baseurl'], $uploads['basedir'], $src ) );
+			if ( strpos( $src, $uploads['baseurl'] ) !== 0 || ! file_exists( $webp_path ) ) {
+				return $m[0];
+			}
+			return '<picture><source srcset="' . esc_url( $webp_url ) . '" type="image/webp">' . $m[0] . '</picture>';
+		},
+		$html
+	);
+}
+add_filter( 'post_thumbnail_html', 'ignites_child_wrap_img_webp', 20 );
+add_filter( 'wp_get_attachment_image', 'ignites_child_wrap_img_webp', 20 );
 
 /**
  * Estimate reading time in Latvian. Returns a localized string like "5 min lasīšana".
