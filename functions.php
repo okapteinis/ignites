@@ -36,10 +36,14 @@ function ignites_child_enqueue() {
 	// Version by file mtime (not the static theme Version) so the ?ver= query
 	// busts browser + CDN caches on EVERY edit — a static ver kept serving
 	// stale CSS after edits (the 2026-06-09 unstyled-switcher regression).
-	$child_css = get_stylesheet_directory() . '/style.css';
+	// Serve the minified stylesheet when present (style.css stays readable on disk for the
+	// required WP theme header — ignites#32). Version by the served file's mtime.
+	$child_min = get_stylesheet_directory() . '/style.min.css';
+	$use_min   = file_exists( $child_min );
+	$child_css = $use_min ? $child_min : get_stylesheet_directory() . '/style.css';
 	wp_enqueue_style(
 		'ignites-child',
-		get_stylesheet_directory_uri() . '/style.css',
+		get_stylesheet_directory_uri() . ( $use_min ? '/style.min.css' : '/style.css' ),
 		array( 'ignites-parent' ),
 		file_exists( $child_css ) ? (string) filemtime( $child_css ) : wp_get_theme()->get( 'Version' )
 	);
@@ -94,8 +98,37 @@ function ignites_child_defer_scripts() {
 	wp_script_add_data( 'jquery-migrate', 'group', 1 );
 	wp_dequeue_script( 'bootstrap-bundle' );
 	wp_deregister_script( 'bootstrap-bundle' );
+	// bootstrap.min.css (33 KB, 97% unused): the only classes the templates use — container,
+	// row, col-lg-*, d-flex, justify-content-*, text-center, m-0, position-* — are all in the
+	// inlined critical.css, so the file is fully redundant. Dequeue it entirely (ignites#32).
+	wp_dequeue_style( 'bootstrap' );
+	wp_deregister_style( 'bootstrap' );
 }
 add_action( 'wp_enqueue_scripts', 'ignites_child_defer_scripts', 99 );
+
+/**
+ * Drop jQuery (ignites#32). The parent's main.js was jQuery's only consumer (no plugin
+ * or inline script uses it — verified). Swap it for a vanilla child main.js and dequeue
+ * jQuery + jquery-migrate entirely (−31 KB). Behaviour is preserved: scroll-to-top (a
+ * no-op anyway — the child hides .scroll-top with display:none!important), submenu
+ * arrows, the mobile hamburger menu, and the widget .children class.
+ */
+function ignites_child_replace_main_js() {
+	wp_dequeue_script( 'ignites-main-js' );
+	wp_deregister_script( 'ignites-main-js' );
+	wp_dequeue_script( 'jquery' );
+	wp_dequeue_script( 'jquery-core' );
+	wp_dequeue_script( 'jquery-migrate' );
+	$path = get_stylesheet_directory() . '/assets/js/main.js';
+	wp_enqueue_script(
+		'ignites-child-main',
+		get_stylesheet_directory_uri() . '/assets/js/main.js',
+		array(),
+		is_readable( $path ) ? filemtime( $path ) : null,
+		true
+	);
+}
+add_action( 'wp_enqueue_scripts', 'ignites_child_replace_main_js', 100 );
 
 /**
  * Drop WP core's auto fetchpriority=high from attachment images. Core tags the first
@@ -124,9 +157,21 @@ add_filter( 'wp_get_attachment_image_attributes', 'ignites_child_strip_image_fet
  */
 function ignites_child_inline_critical_css() {
 	$crit = get_stylesheet_directory() . '/assets/css/critical.css';
-	if ( is_readable( $crit ) ) {
-		echo "<style id=\"ignites-critical-css\">\n" . file_get_contents( $crit ) . "\n</style>\n";
+	if ( ! is_readable( $crit ) ) {
+		return;
 	}
+	$css = file_get_contents( $crit );
+	// Inline CSS resolves url() against the DOCUMENT, not the source stylesheet, so the
+	// sheets' relative asset paths must be made absolute or they 404 (ignites#32). Child
+	// style.css used url("assets/…"); linearicons.css (parent) used url("../fonts/…").
+	$child  = trailingslashit( get_stylesheet_directory_uri() );
+	$parent = trailingslashit( get_template_directory_uri() );
+	$css = str_replace(
+		array( 'url("assets/', "url('assets/", 'url("../fonts/', "url('../fonts/" ),
+		array( 'url("' . $child . 'assets/', "url('" . $child . 'assets/', 'url("' . $parent . 'assets/fonts/', "url('" . $parent . 'assets/fonts/' ),
+		$css
+	);
+	echo "<style id=\"ignites-critical-css\">\n" . $css . "\n</style>\n";
 }
 add_action( 'wp_head', 'ignites_child_inline_critical_css', 2 );
 
@@ -151,7 +196,7 @@ add_action( 'wp_head', 'ignites_child_inline_critical_css', 2 );
  * @return string
  */
 function ignites_child_async_noncritical_css( $html, $handle ) {
-	$async_handles = array( 'bootstrap', 'ignites-main-css', 'linearicons', 'ignites-parent', 'ignites-child' );
+	$async_handles = array( 'ignites-main-css', 'linearicons', 'ignites-parent', 'ignites-child' );
 	if ( ! in_array( $handle, $async_handles, true ) ) {
 		return $html;
 	}
@@ -182,7 +227,7 @@ add_filter( 'style_loader_tag', 'ignites_child_async_noncritical_css', 10, 2 );
  * @return string
  */
 function ignites_child_defer_script_tags( $tag, $handle ) {
-	$defer = array( 'jquery-core', 'jquery-migrate', 'ignites-navigation', 'ignites-skip-link-focus-fix', 'ignites-main-js' );
+	$defer = array( 'jquery-core', 'jquery-migrate', 'ignites-navigation', 'ignites-skip-link-focus-fix', 'ignites-main-js', 'ignites-child-main' );
 	if ( in_array( $handle, $defer, true ) && false === strpos( $tag, ' defer' ) && false !== strpos( $tag, ' src=' ) ) {
 		$tag = str_replace( ' src=', ' defer src=', $tag );
 	}
