@@ -47,6 +47,20 @@ function ignites_child_enqueue() {
 add_action( 'wp_enqueue_scripts', 'ignites_child_enqueue', 20 );
 
 /**
+ * Perf: drop the duplicate child stylesheet request. The PARENT theme
+ * (ignites-nightly/inc/ignites_styles_scripts.php) enqueues get_stylesheet_uri()
+ * under handle 'ignites-style' — which resolves to the CHILD style.css, already
+ * loaded above as 'ignites-child' (mtime-versioned, parent-dependent). That made
+ * the homepage request child/style.css twice (?ver=cp_… and ?ver=<mtime>), an
+ * extra render-blocking CSS round-trip flagged by Lighthouse. Dequeue the
+ * redundant copy at a late priority (after the parent has registered it).
+ */
+add_action( 'wp_enqueue_scripts', function () {
+	wp_dequeue_style( 'ignites-style' );
+	wp_deregister_style( 'ignites-style' );
+}, 99 );
+
+/**
  * Estimate reading time in Latvian. Returns a localized string like "5 min lasīšana".
  *
  * @param int|WP_Post|null $post Post ID, object, or null for current.
