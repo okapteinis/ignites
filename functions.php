@@ -45,7 +45,7 @@ function ignites_child_enqueue() {
 		'ignites-child',
 		get_stylesheet_directory_uri() . ( $use_min ? '/style.min.css' : '/style.css' ),
 		array( 'ignites-parent' ),
-		file_exists( $child_css ) ? (string) filemtime( $child_css ) : wp_get_theme()->get( 'Version' )
+		(string) filemtime( $child_css ) // $child_css is always a present file (style.min.css or the required style.css)
 	);
 }
 add_action( 'wp_enqueue_scripts', 'ignites_child_enqueue', 20 );
@@ -196,6 +196,9 @@ add_action( 'wp_head', 'ignites_child_inline_critical_css', 2 );
  * @return string
  */
 function ignites_child_async_noncritical_css( $html, $handle ) {
+	// Explicit allow-list (not deny-all) so a new critical sheet can't be async'd by mistake.
+	// MAINTENANCE: when the theme enqueues a NEW non-critical stylesheet, add its handle here
+	// (and cover its above-fold rules in critical.css) — else it stays render-blocking silently.
 	$async_handles = array( 'ignites-main-css', 'linearicons', 'ignites-parent', 'ignites-child' );
 	if ( ! in_array( $handle, $async_handles, true ) ) {
 		return $html;
@@ -244,11 +247,22 @@ add_filter( 'script_loader_tag', 'ignites_child_defer_script_tags', 10, 2 );
  * @param string $path Absolute image path.
  * @return void
  */
+/**
+ * Map a .png/.jpg/.jpeg path or URL to its .webp sibling (ignites#32). Shared by the
+ * generator + the <picture> wrapper so the extension regex lives in one place.
+ *
+ * @param string $path Image path or URL.
+ * @return string
+ */
+function ignites_child_webp_name( $path ) {
+	return preg_replace( '/\.(png|jpe?g)$/i', '.webp', $path );
+}
+
 function ignites_child_make_webp_sibling( $path ) {
 	if ( ! is_string( $path ) || ! is_readable( $path ) || ! function_exists( 'imagewebp' ) ) {
 		return;
 	}
-	$webp = preg_replace( '/\.(png|jpe?g)$/i', '.webp', $path );
+	$webp = ignites_child_webp_name( $path );
 	if ( $webp === $path || file_exists( $webp ) ) {
 		return;
 	}
@@ -299,8 +313,8 @@ function ignites_child_wrap_img_webp( $html ) {
 		'/<img\b[^>]*\bsrc=["\']([^"\']+\.(?:png|jpe?g))["\'][^>]*>/i',
 		function ( $m ) use ( $uploads ) {
 			$src       = $m[1];
-			$webp_url  = preg_replace( '/\.(png|jpe?g)$/i', '.webp', $src );
-			$webp_path = preg_replace( '/\.(png|jpe?g)$/i', '.webp', str_replace( $uploads['baseurl'], $uploads['basedir'], $src ) );
+			$webp_url  = ignites_child_webp_name( $src );
+			$webp_path = ignites_child_webp_name( str_replace( $uploads['baseurl'], $uploads['basedir'], $src ) );
 			if ( strpos( $src, $uploads['baseurl'] ) !== 0 || ! file_exists( $webp_path ) ) {
 				return $m[0];
 			}
