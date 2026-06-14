@@ -92,6 +92,42 @@ add_filter( 'wp_get_attachment_image_attributes', function ( $attr ) {
 }, 20 );
 
 /**
+ * Perf (ignites#31): take the 33 KB / 97%-unused bootstrap.min.css off the render-
+ * blocking critical path.
+ *
+ * The blog HTML is already ~11 KB br — inside Cloudflare's measured ~33 KB edge first
+ * flight — so first paint is gated not by bytes but by render-blocking CSS, of which
+ * bootstrap.min.css is by far the largest. We inline the Bootstrap GRID subset (grid +
+ * the handful of flex/display/text utilities the templates use above the fold) so the
+ * layout is correct from the first paint, then load the full bootstrap.min.css
+ * non-blocking (media=print → swap to all on load) with a <noscript> fallback for JS-off
+ * clients. Theme sheets (main.css / child / nightly / linearicons) stay render-blocking —
+ * they carry the masthead/nav/typography, so the only thing that could FOUC is the
+ * Bootstrap grid, which the inline subset covers.
+ */
+add_action( 'wp_head', function () {
+	$crit = get_stylesheet_directory() . '/assets/css/critical.css';
+	if ( is_readable( $crit ) ) {
+		echo "<style id=\"ignites-critical-css\">\n" . file_get_contents( $crit ) . "\n</style>\n";
+	}
+}, 2 );
+
+add_filter( 'style_loader_tag', function ( $html, $handle ) {
+	if ( 'bootstrap' !== $handle ) {
+		return $html;
+	}
+	// Async-load: render with media=print, swap to all once downloaded; keep a plain
+	// stylesheet inside <noscript> so JS-disabled clients still get Bootstrap.
+	$async = preg_replace(
+		"/ media='all'/",
+		" media='print' onload=\"this.media='all'\"",
+		$html,
+		1
+	);
+	return $async . "<noscript>" . $html . "</noscript>\n";
+}, 10, 2 );
+
+/**
  * Estimate reading time in Latvian. Returns a localized string like "5 min lasīšana".
  *
  * @param int|WP_Post|null $post Post ID, object, or null for current.
