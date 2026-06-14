@@ -46,6 +46,124 @@ function ignites_child_enqueue() {
 }
 add_action( 'wp_enqueue_scripts', 'ignites_child_enqueue', 20 );
 
+/* ============================================================================
+ * Performance — critical-path trimming (ignites#30 + #31)
+ * ----------------------------------------------------------------------------
+ * Strategy (verified against this site, behind Cloudflare APO):
+ *   1. Drop a duplicate render-blocking stylesheet request.
+ *   2. Defer all jQuery + drop unused Bootstrap JS from the head.
+ *   3. Stop misdirecting the browser's LCP hint onto post thumbnails.
+ *   4. Inline the above-the-fold critical CSS and async-load the 33 KB Bootstrap
+ *      stylesheet, so first paint isn't render-blocked by it.
+ * Each step is its own named function (unhookable + unit-testable) hooked below.
+ * ========================================================================== */
+
+/**
+ * Drop the duplicate child stylesheet request. The PARENT theme
+ * (ignites-nightly/inc/ignites_styles_scripts.php) enqueues get_stylesheet_uri()
+ * under handle 'ignites-style' — which resolves to the CHILD style.css, already
+ * loaded as 'ignites-child' (mtime-versioned, parent-dependent). That made the
+ * homepage request child/style.css twice (?ver=cp_… and ?ver=<mtime>), an extra
+ * render-blocking round-trip flagged by Lighthouse. Dequeue the redundant copy at
+ * a late priority (after the parent has registered it). Safe: nothing attaches
+ * inline styles to 'ignites-style' and its only other reference (jetpack
+ * content-options) is inert — Jetpack is not active.
+ */
+function ignites_child_dequeue_duplicate_style() {
+	wp_dequeue_style( 'ignites-style' );
+	wp_deregister_style( 'ignites-style' );
+}
+add_action( 'wp_enqueue_scripts', 'ignites_child_dequeue_duplicate_style', 99 );
+
+/**
+ * Defer scripts out of the render-blocking <head>:
+ * - jQuery → footer. The parent enqueues 'jquery' in <head>, but its only consumer
+ *   (ignites-main-js) is already footer-enqueued, and nothing in <head> uses jQuery
+ *   (navigation.js / skip-link / the inline head scripts = 0 jQuery refs). Moving the
+ *   meta handle + core + migrate to the footer group un-blocks ~1.3 s of head render.
+ *   WP pulls jQuery back to <head> automatically IFF a plugin head-script declares it
+ *   as a dependency, so the worst case is a no-op, never breakage.
+ * - bootstrap-bundle JS is unused: no template uses Bootstrap data attributes
+ *   (collapse, dropdown, modal, navbar-toggler — the menu toggle is navigation.js) and
+ *   main.js never calls Bootstrap JS. Dequeue it (it was footer, so this is a pure
+ *   byte/request saving, not a render-block fix).
+ */
+function ignites_child_defer_scripts() {
+	wp_script_add_data( 'jquery', 'group', 1 );
+	wp_script_add_data( 'jquery-core', 'group', 1 );
+	wp_script_add_data( 'jquery-migrate', 'group', 1 );
+	wp_dequeue_script( 'bootstrap-bundle' );
+	wp_deregister_script( 'bootstrap-bundle' );
+}
+add_action( 'wp_enqueue_scripts', 'ignites_child_defer_scripts', 99 );
+
+/**
+ * Drop WP core's auto fetchpriority=high from attachment images. Core tags the first
+ * content image as its LCP guess, but our real LCP is the CSS masthead (header
+ * ::before) — preloaded separately in the no-flash script. So the hint is misdirected
+ * on below-the-fold, lazy-loaded images. Applies to every attachment image (the blog
+ * has no content-image LCP); loading=lazy is preserved.
+ *
+ * @param array $attr Attachment <img> attributes.
+ * @return array
+ */
+function ignites_child_strip_image_fetchpriority( $attr ) {
+	unset( $attr['fetchpriority'] );
+	return $attr;
+}
+add_filter( 'wp_get_attachment_image_attributes', 'ignites_child_strip_image_fetchpriority', 20 );
+
+/**
+ * Inline the above-the-fold critical CSS (Bootstrap grid + used flex/display/text
+ * utilities; see assets/css/critical.css) so the layout is correct from first paint
+ * even while bootstrap.min.css loads asynchronously (see below). The blog HTML is
+ * already ~11 KB br — inside Cloudflare's measured ~33 KB edge first flight — so first
+ * paint is gated by render-blocking CSS, not bytes. is_readable() guards a fatal if
+ * the file is ever missing.
+ */
+function ignites_child_inline_critical_css() {
+	$crit = get_stylesheet_directory() . '/assets/css/critical.css';
+	if ( is_readable( $crit ) ) {
+		echo "<style id=\"ignites-critical-css\">\n" . file_get_contents( $crit ) . "\n</style>\n";
+	}
+}
+add_action( 'wp_head', 'ignites_child_inline_critical_css', 2 );
+
+/**
+ * Take the 33 KB / 97%-unused bootstrap.min.css off the render-blocking path: render
+ * its <link> with media=print and swap to media=all once downloaded, with a <noscript>
+ * fallback so JS-off clients still get it. The grid stays correct meanwhile because the
+ * critical subset is inlined above. Theme sheets (main.css / child / nightly /
+ * linearicons) stay render-blocking — they carry the masthead/nav/typography, so the
+ * only thing that could FOUC is the Bootstrap grid, which the inline subset covers.
+ *
+ * The media match tolerates single- OR double-quoted media="all" (WP/CP render style
+ * may differ); if no recognisable media attribute is present the tag is returned
+ * unchanged (still render-blocking, but never double-loaded).
+ *
+ * @param string $html  The <link> tag markup.
+ * @param string $handle Registered style handle.
+ * @return string
+ */
+function ignites_child_async_bootstrap_css( $html, $handle ) {
+	if ( 'bootstrap' !== $handle ) {
+		return $html;
+	}
+	$async = preg_replace(
+		'/ media=([\'"])all\1/',
+		' media=${1}print${1} onload="this.media=\'all\'"',
+		$html,
+		1
+	);
+	// No recognisable media attribute → leave the tag render-blocking rather than
+	// emit a render-blocking copy AND a duplicate <noscript> copy.
+	if ( null === $async || $async === $html ) {
+		return $html;
+	}
+	return $async . '<noscript>' . $html . "</noscript>\n";
+}
+add_filter( 'style_loader_tag', 'ignites_child_async_bootstrap_css', 10, 2 );
+
 /**
  * Estimate reading time in Latvian. Returns a localized string like "5 min lasīšana".
  *
@@ -404,20 +522,14 @@ function ignites_child_render_lang_switch() {
 }
 add_action( 'wp_footer', 'ignites_child_render_lang_switch', 1 );
 
-/**
- * Preload the two render-critical font files (Cormorant Garamond latin
- * subset + Inter Variable roman) so they start downloading in parallel
- * with the CSS rather than waiting for the stylesheet to be parsed.
- * Latin-ext + italic stay lazy — most pages don't trigger them on
- * first paint. crossorigin is required even for same-origin font
- * preloads, otherwise the browser ignores the hint.
+/*
+ * Fonts are deliberately NOT preloaded (removed 2026-06-14, ignites#30).
+ * Every @font-face uses font-display:swap, so a preload gave ~0 render benefit
+ * (fallback text shows immediately, the web font swaps in when ready) but made
+ * the 344 KB InterVariable.woff2 win the bandwidth-constrained mobile pipe AHEAD
+ * of the real LCP element — the masthead background image — pushing LCP to ~6 s.
+ * The LCP image is preloaded instead, in the no-flash script above (themed).
  */
-function ignites_child_preload_fonts() {
-	$base = get_stylesheet_directory_uri();
-	echo '<link rel="preload" href="' . esc_url( $base . '/assets/fonts/inter/InterVariable.woff2' ) . '" as="font" type="font/woff2" crossorigin>' . "\n";
-	echo '<link rel="preload" href="' . esc_url( $base . '/assets/fonts/cormorant-garamond/cormorant-garamond-latin.woff2' ) . '" as="font" type="font/woff2" crossorigin>' . "\n";
-}
-add_action( 'wp_head', 'ignites_child_preload_fonts', 2 );
 
 /**
  * Theme-bundled favicon + Apple touch icon. Emits in <head> at default
@@ -446,6 +558,26 @@ function ignites_child_fediverse_creator() {
 	echo '<meta name="fediverse:creator" content="@ojars@kapteinis.lv">' . "\n";
 }
 add_action( 'wp_head', 'ignites_child_fediverse_creator', 5 );
+
+/**
+ * Front-page meta description (SEO). No SEO plugin is installed, so this is the
+ * single homepage <meta name="description">. Bilingual: the string carries both
+ * languages and qTranslate-XT extracts the active one via qtranxf_use() +
+ * qtranxf_getLanguage() (the old qtranxf_isAvailableIn is gone in 3.16.x — see
+ * INFRA_REF §10). Front page only; per-post descriptions are a separate follow-up.
+ * Fixes the PageSpeed/Lighthouse "Document does not have a meta description" (SEO 91).
+ */
+function ignites_child_meta_description() {
+	if ( ! is_front_page() && ! is_home() ) {
+		return;
+	}
+	$desc = '[:lv]Ojāra Kapteiņa blogs par self-hosting, decentralizēto tīmekli un mākslīgo intelektu, politiku un reliģiju, kā arī ikdienas saišu apkopojumi. 🇪🇺 Europe, Rīga.[:en]Ojārs Kapteinis\'s blog about self-hosting, the decentralized web and AI, politics and religion, plus daily link digests. 🇪🇺 Europe, Rīga.[:]';
+	if ( function_exists( 'qtranxf_use' ) && function_exists( 'qtranxf_getLanguage' ) ) {
+		$desc = qtranxf_use( qtranxf_getLanguage(), $desc, false );
+	}
+	echo '<meta name="description" content="' . esc_attr( $desc ) . '">' . "\n";
+}
+add_action( 'wp_head', 'ignites_child_meta_description', 3 );
 
 /**
  * Cloudflare Web Analytics beacon — privacy-first, COOKIELESS reader counter.
@@ -495,6 +627,15 @@ function ignites_child_no_flash_script() {
 			var prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
 			var theme = (stored === 'light' || stored === 'dark') ? stored : (prefersDark ? 'dark' : 'light');
 			document.documentElement.setAttribute('data-theme', theme);
+			// Preload the LCP masthead for the RESOLVED theme. It's a CSS ::before
+			// background (otherwise undiscoverable until the stylesheet parses), so we
+			// prioritise it here instead of preloading the swap-fonts (ignites#30).
+			var base = '<?php echo esc_url( get_stylesheet_directory_uri() ); ?>';
+			var l = document.createElement('link');
+			l.rel = 'preload'; l.as = 'image';
+			l.href = base + '/assets/images/header-' + theme + '.webp';
+			l.setAttribute('fetchpriority', 'high');
+			document.head.appendChild(l);
 		} catch (e) {}
 	})();
 	</script>
