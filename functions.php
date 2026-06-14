@@ -418,20 +418,14 @@ function ignites_child_render_lang_switch() {
 }
 add_action( 'wp_footer', 'ignites_child_render_lang_switch', 1 );
 
-/**
- * Preload the two render-critical font files (Cormorant Garamond latin
- * subset + Inter Variable roman) so they start downloading in parallel
- * with the CSS rather than waiting for the stylesheet to be parsed.
- * Latin-ext + italic stay lazy — most pages don't trigger them on
- * first paint. crossorigin is required even for same-origin font
- * preloads, otherwise the browser ignores the hint.
+/*
+ * Fonts are deliberately NOT preloaded (removed 2026-06-14, ignites#30).
+ * Every @font-face uses font-display:swap, so a preload gave ~0 render benefit
+ * (fallback text shows immediately, the web font swaps in when ready) but made
+ * the 344 KB InterVariable.woff2 win the bandwidth-constrained mobile pipe AHEAD
+ * of the real LCP element — the masthead background image — pushing LCP to ~6 s.
+ * The LCP image is preloaded instead, in the no-flash script above (themed).
  */
-function ignites_child_preload_fonts() {
-	$base = get_stylesheet_directory_uri();
-	echo '<link rel="preload" href="' . esc_url( $base . '/assets/fonts/inter/InterVariable.woff2' ) . '" as="font" type="font/woff2" crossorigin>' . "\n";
-	echo '<link rel="preload" href="' . esc_url( $base . '/assets/fonts/cormorant-garamond/cormorant-garamond-latin.woff2' ) . '" as="font" type="font/woff2" crossorigin>' . "\n";
-}
-add_action( 'wp_head', 'ignites_child_preload_fonts', 2 );
 
 /**
  * Theme-bundled favicon + Apple touch icon. Emits in <head> at default
@@ -529,6 +523,15 @@ function ignites_child_no_flash_script() {
 			var prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
 			var theme = (stored === 'light' || stored === 'dark') ? stored : (prefersDark ? 'dark' : 'light');
 			document.documentElement.setAttribute('data-theme', theme);
+			// Preload the LCP masthead for the RESOLVED theme. It's a CSS ::before
+			// background (otherwise undiscoverable until the stylesheet parses), so we
+			// prioritise it here instead of preloading the swap-fonts (ignites#30).
+			var base = '<?php echo esc_url( get_stylesheet_directory_uri() ); ?>';
+			var l = document.createElement('link');
+			l.rel = 'preload'; l.as = 'image';
+			l.href = base + '/assets/images/header-' + theme + '.webp';
+			l.setAttribute('fetchpriority', 'high');
+			document.head.appendChild(l);
 		} catch (e) {}
 	})();
 	</script>

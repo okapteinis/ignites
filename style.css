@@ -228,7 +228,9 @@ picture {
   display: block;
   width: 100%;
   height: 200px;
-  background-image: url("assets/images/header-light.jpeg");
+  background-image: url("assets/images/header-light.jpeg"); /* fallback */
+  background-image: -webkit-image-set(url("assets/images/header-light.webp") type("image/webp"), url("assets/images/header-light.jpeg") type("image/jpeg"));
+  background-image: image-set(url("assets/images/header-light.webp") type("image/webp"), url("assets/images/header-light.jpeg") type("image/jpeg"));
   background-repeat: repeat-x;
   background-position: center bottom;
   background-size: auto 100%;
@@ -236,12 +238,16 @@ picture {
 }
 
 [data-theme="dark"] .header-section::before {
-  background-image: url("assets/images/header-dark.jpeg");
+  background-image: url("assets/images/header-dark.jpeg"); /* fallback */
+  background-image: -webkit-image-set(url("assets/images/header-dark.webp") type("image/webp"), url("assets/images/header-dark.jpeg") type("image/jpeg"));
+  background-image: image-set(url("assets/images/header-dark.webp") type("image/webp"), url("assets/images/header-dark.jpeg") type("image/jpeg"));
 }
 
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]):not([data-theme="dark"]) .header-section::before {
-    background-image: url("assets/images/header-dark.jpeg");
+    background-image: url("assets/images/header-dark.jpeg"); /* fallback */
+    background-image: -webkit-image-set(url("assets/images/header-dark.webp") type("image/webp"), url("assets/images/header-dark.jpeg") type("image/jpeg"));
+    background-image: image-set(url("assets/images/header-dark.webp") type("image/webp"), url("assets/images/header-dark.jpeg") type("image/jpeg"));
   }
 }
 
