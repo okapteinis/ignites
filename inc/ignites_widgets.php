@@ -1,5 +1,9 @@
 <?php
 
+if ( ! defined( 'ABSPATH' ) ) {
+	exit; // No direct access.
+}
+
 	function ignites_widgets_init() {
 	register_sidebar( 
 	array(

@@ -1,5 +1,9 @@
 <?php
 
+if ( ! defined( 'ABSPATH' ) ) {
+	exit; // No direct access.
+}
+
 	if ( ! function_exists( 'ignites_setup' ) ) :
 		function ignites_setup() {
 
