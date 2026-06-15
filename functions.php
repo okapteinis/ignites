@@ -350,12 +350,25 @@ function ignites_child_reading_time( $post = null ) {
 	if ( ! $post ) {
 		return '';
 	}
-	// Cache the integer minute count in post_meta — formatting stays
-	// runtime so the i18n string honors current locale + plural forms.
-	// Cache is invalidated on save_post (see action below).
-	$minutes = (int) get_post_meta( $post->ID, '_ignites_child_reading_minutes', true );
+	// Cache the integer minute count in post_meta, keyed PER LANGUAGE. The count is
+	// computed over the ACTIVE-LANGUAGE segment only (see below), so a bilingual post
+	// has a different value for LV vs EN. Cache is invalidated on save_post (see action
+	// below). Formatting stays runtime so the i18n string honors current locale + plurals.
+	$lang     = function_exists( 'qtranxf_getLanguage' ) ? qtranxf_getLanguage() : 'lv';
+	$meta_key = '_ignites_child_reading_minutes_' . $lang;
+	$minutes  = (int) get_post_meta( $post->ID, $meta_key, true );
 	if ( $minutes <= 0 ) {
-		$content = strip_shortcodes( $post->post_content );
+		// Count only the active language's words. post_content holds BOTH languages as
+		// `[:lv]…[:en]…[:]`; counting the raw string ~doubled the time on bilingual posts
+		// (review finding H1). qtranxf_use() extracts the current-language segment and
+		// returns monolingual content unchanged, so LV-only / EN-only posts keep the same
+		// count as before. The count method (preg_match_all) and 200 wpm divisor are
+		// unchanged — only the input text (active-language segment) changes.
+		$content = $post->post_content;
+		if ( function_exists( 'qtranxf_use' ) ) {
+			$content = qtranxf_use( $lang, $content, false );
+		}
+		$content = strip_shortcodes( $content );
 		$content = wp_strip_all_tags( $content );
 		preg_match_all( '/\p{L}[\p{L}\p{M}\p{Nd}\'-]*/u', $content, $matches );
 		$words = count( $matches[0] );
@@ -363,7 +376,7 @@ function ignites_child_reading_time( $post = null ) {
 			return '';
 		}
 		$minutes = max( 1, (int) ceil( $words / 200 ) );
-		update_post_meta( $post->ID, '_ignites_child_reading_minutes', $minutes );
+		update_post_meta( $post->ID, $meta_key, $minutes );
 	}
 	/* translators: %d: estimated reading time in minutes. The string is identical
 	   for every minute count (no LV plural variation), so plain __() is correct —
@@ -382,7 +395,11 @@ add_action( 'save_post', function ( $post_id ) {
 	if ( wp_is_post_revision( $post_id ) || wp_is_post_autosave( $post_id ) ) {
 		return;
 	}
+	// Per-language reading-minute caches + the legacy language-agnostic key (one-time
+	// cleanup of values written before the active-language fix — review finding H1).
 	delete_post_meta( $post_id, '_ignites_child_reading_minutes' );
+	delete_post_meta( $post_id, '_ignites_child_reading_minutes_lv' );
+	delete_post_meta( $post_id, '_ignites_child_reading_minutes_en' );
 	delete_transient( 'ignites_child_en_avail_cats' );
 	delete_transient( 'ignites_child_en_avail_ids' );
 } );
