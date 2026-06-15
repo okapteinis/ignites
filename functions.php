@@ -774,7 +774,7 @@ add_action( 'wp_head', 'ignites_child_meta_description', 3 );
  * Dashboard: Cloudflare → Web Analytics → ojars.kapteinis.lv. See INFRA_REF §10.
  */
 function ignites_child_cf_web_analytics() {
-	$host = isset( $_SERVER['HTTP_HOST'] ) ? strtolower( wp_unslash( $_SERVER['HTTP_HOST'] ) ) : '';
+	$host = isset( $_SERVER['HTTP_HOST'] ) ? sanitize_text_field( strtolower( wp_unslash( $_SERVER['HTTP_HOST'] ) ) ) : '';
 	if ( 'ojars.kapteinis.lv' !== $host ) {
 		return;
 	}
