@@ -40,7 +40,7 @@ $ignites_comments_number = get_comments_number();
 					_nx(
 						'%1$s thought on &ldquo;%2$s&rdquo;',
 						'%1$s thoughts on &ldquo;%2$s&rdquo;',
-						esc_html($ignites_comments_number),
+						(int) $ignites_comments_number,
 						'comments title',
 						'ignites'
 					),

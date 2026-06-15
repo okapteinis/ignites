@@ -23,7 +23,7 @@
                             echo esc_html(get_theme_mod('copyright_txt'));
                         } else {
                             _e('Copyright &copy; ', 'ignites');
-                            echo date("Y");
+                            echo esc_html( date_i18n( 'Y' ) );
                             _e(' | <a href="//dopetheme.com">DopeTheme</a>', 'ignites');
                         }
                         ?>
