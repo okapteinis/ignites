@@ -35,8 +35,6 @@ if (!function_exists('ignites_post_comment')) :
 
 	function ignites_post_comment($comment, $args, $depth)
 	{
-		// $GLOBALS['comment'] = $comment;
-
 		if ('pingback' == $comment->comment_type || 'trackback' == $comment->comment_type) : ?>
 
 			<li id="comment-<?php comment_ID(); ?>" <?php comment_class('media'); ?>>
@@ -163,9 +161,9 @@ if (!function_exists('ignites_layout_option')) :
 		$side_layout =  get_theme_mod("ignites_sidebar_settings");
 
 		if ($side_layout == 'no-sidebar') {
-			echo esc_html($layout_class = "col-lg-12 fullwidth-content");
+			echo 'col-lg-12 fullwidth-content';
 		} else {
-			echo esc_html($layout_class = "col-lg-8");
+			echo 'col-lg-8';
 		}
 	}
 endif;

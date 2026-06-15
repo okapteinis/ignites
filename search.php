@@ -26,7 +26,7 @@ get_header();
                                         <header class="page-header">
                                             <h1 class="page-title">
 												<?php
-												/* translators: 1: WordPress version number*/
+												/* translators: %s: the search query string */
 												printf( esc_html__( 'Search Results for: %s', 'ignites' ), '<span>' . get_search_query() . '</span>' );
 												?>
                                             </h1>
