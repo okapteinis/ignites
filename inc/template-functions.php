@@ -5,6 +5,10 @@
  * @package Ignites
  */
 
+if ( ! defined( 'ABSPATH' ) ) {
+	exit; // No direct access.
+}
+
 /**
  * Adds custom classes to the array of body classes.
  *

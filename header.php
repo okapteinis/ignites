@@ -45,7 +45,7 @@ if ( function_exists( 'wp_body_open' ) ) {
 						    <?php $ignites_description = get_bloginfo( 'description', 'display' );
 						    if ( $ignites_description || is_customize_preview() ) :
 							    ?>
-                                <p class="site-description"><?php echo $ignites_description; /* WPCS: xss ok. */ ?></p>
+                                <p class="site-description"><?php echo esc_html( $ignites_description ); ?></p>
 						    <?php endif; ?>
                         </div><!-- .site-branding -->
 

@@ -7,6 +7,10 @@
  * @package Ignites
  */
 
+if ( ! defined( 'ABSPATH' ) ) {
+	exit; // No direct access.
+}
+
 if ( ! function_exists( 'ignites_posted_on' ) ) :
 	/**
 	 * Prints HTML with meta information for the current post-date/time.

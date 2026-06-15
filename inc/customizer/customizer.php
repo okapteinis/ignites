@@ -5,6 +5,10 @@
  * @package Ignites
  */
 
+if ( ! defined( 'ABSPATH' ) ) {
+	exit; // No direct access.
+}
+
 /**
  * Add postMessage support for site title and description for the Theme Customizer.
  *
@@ -139,7 +143,7 @@ add_action( 'customize_preview_init', 'ignites_customize_preview_js' );
 function ignites_customizer_css() {
 	?>
 	<style type="text/css">
-		.header-section { background-color: <?php echo esc_html(get_theme_mod( 'header_bg_color' )); ?>; }
+		.header-section { background-color: <?php echo esc_attr( sanitize_hex_color( (string) get_theme_mod( 'header_bg_color' ) ) ); ?>; }
 	</style>
 	<?php
 }

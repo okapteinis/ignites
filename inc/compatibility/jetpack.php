@@ -7,6 +7,10 @@
  * @package Ignites
  */
 
+if ( ! defined( 'ABSPATH' ) ) {
+	exit; // No direct access.
+}
+
 /**
  * Jetpack setup function.
  *

@@ -11,6 +11,10 @@
  * @package Ignites
  */
 
+if ( ! defined( 'ABSPATH' ) ) {
+	exit; // No direct access.
+}
+
 /**
  * Set up the WordPress core custom header feature.
  *
