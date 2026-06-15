@@ -36,16 +36,20 @@ function ignites_child_enqueue() {
 	// Version by file mtime (not the static theme Version) so the ?ver= query
 	// busts browser + CDN caches on EVERY edit — a static ver kept serving
 	// stale CSS after edits (the 2026-06-09 unstyled-switcher regression).
-	// Serve the minified stylesheet when present (style.css stays readable on disk for the
-	// required WP theme header — ignites#32). Version by the served file's mtime.
+	// Serve the readable style.css, NOT style.min.css. The #34 csscompressor pass stripped the
+	// required whitespace around +/- inside clamp() (e.g. `clamp(1.5rem,1.2rem+1.25vw,2.25rem)`),
+	// which is INVALID CSS math → every `font-size: var(--text-*)` became invalid-at-computed-value
+	// and inherited 16px (titles + menu shrank). Browser-proven: spaced clamp → 36px, no-space → 16px.
+	// The minify saved ~0 bytes here (25,065 B vs the readable file), so it bought nothing. Re-enable
+	// only with a clamp-safe minifier that preserves whitespace inside calc()/clamp(). (ignites#36)
 	$child_min = get_stylesheet_directory() . '/style.min.css';
-	$use_min   = file_exists( $child_min );
+	$use_min   = false;
 	$child_css = $use_min ? $child_min : get_stylesheet_directory() . '/style.css';
 	wp_enqueue_style(
 		'ignites-child',
 		get_stylesheet_directory_uri() . ( $use_min ? '/style.min.css' : '/style.css' ),
 		array( 'ignites-parent' ),
-		file_exists( $child_css ) ? (string) filemtime( $child_css ) : wp_get_theme()->get( 'Version' )
+		(string) filemtime( $child_css ) // $child_css is always a present file (style.min.css or the required style.css)
 	);
 }
 add_action( 'wp_enqueue_scripts', 'ignites_child_enqueue', 20 );
@@ -173,6 +177,11 @@ function ignites_child_inline_critical_css() {
 	);
 	echo "<style id=\"ignites-critical-css\">\n" . $css . "\n</style>\n";
 }
+// KEEP ENABLED (ignites#36): this block is LOAD-BEARING — since #34 dropped (dequeued)
+// bootstrap.min.css, critical.css is the SOLE source of the Bootstrap grid + 5 of the 6 @font-face
+// declarations. The FOUC + font-jump incident was caused by the ASYNC swap below (now disabled), NOT
+// by this inline block. With the sheets render-blocking, first paint applies the full cascade
+// (child body rule wins by source order → Inter / var(--text-base)), so no flash and no resize.
 add_action( 'wp_head', 'ignites_child_inline_critical_css', 2 );
 
 /**
@@ -196,6 +205,9 @@ add_action( 'wp_head', 'ignites_child_inline_critical_css', 2 );
  * @return string
  */
 function ignites_child_async_noncritical_css( $html, $handle ) {
+	// Explicit allow-list (not deny-all) so a new critical sheet can't be async'd by mistake.
+	// MAINTENANCE: when the theme enqueues a NEW non-critical stylesheet, add its handle here
+	// (and cover its above-fold rules in critical.css) — else it stays render-blocking silently.
 	$async_handles = array( 'ignites-main-css', 'linearicons', 'ignites-parent', 'ignites-child' );
 	if ( ! in_array( $handle, $async_handles, true ) ) {
 		return $html;
@@ -213,7 +225,11 @@ function ignites_child_async_noncritical_css( $html, $handle ) {
 	}
 	return $async . '<noscript>' . $html . "</noscript>\n";
 }
-add_filter( 'style_loader_tag', 'ignites_child_async_noncritical_css', 10, 2 );
+// DISABLED 2026-06-15 (ignites#36, FOUC incident): see the note on ignites_child_inline_critical_css
+// above. Async-loading the 4 theme sheets broke the parent→child cascade at first paint (FOUC + font
+// jump). Sheets now load normally (render-blocking but correct). The other perf wins are untouched:
+// Bootstrap CSS/JS dequeue, jQuery-drop + vanilla main.js, InterVariable subset, WebP, minify, CF cache.
+// add_filter( 'style_loader_tag', 'ignites_child_async_noncritical_css', 10, 2 );
 
 /**
  * Defer theme + jQuery scripts (ignites#32). ClassicPress 6.2.9 predates the WP 6.3
@@ -244,11 +260,22 @@ add_filter( 'script_loader_tag', 'ignites_child_defer_script_tags', 10, 2 );
  * @param string $path Absolute image path.
  * @return void
  */
+/**
+ * Map a .png/.jpg/.jpeg path or URL to its .webp sibling (ignites#32). Shared by the
+ * generator + the <picture> wrapper so the extension regex lives in one place.
+ *
+ * @param string $path Image path or URL.
+ * @return string
+ */
+function ignites_child_webp_name( $path ) {
+	return preg_replace( '/\.(png|jpe?g)$/i', '.webp', $path );
+}
+
 function ignites_child_make_webp_sibling( $path ) {
 	if ( ! is_string( $path ) || ! is_readable( $path ) || ! function_exists( 'imagewebp' ) ) {
 		return;
 	}
-	$webp = preg_replace( '/\.(png|jpe?g)$/i', '.webp', $path );
+	$webp = ignites_child_webp_name( $path );
 	if ( $webp === $path || file_exists( $webp ) ) {
 		return;
 	}
@@ -299,8 +326,8 @@ function ignites_child_wrap_img_webp( $html ) {
 		'/<img\b[^>]*\bsrc=["\']([^"\']+\.(?:png|jpe?g))["\'][^>]*>/i',
 		function ( $m ) use ( $uploads ) {
 			$src       = $m[1];
-			$webp_url  = preg_replace( '/\.(png|jpe?g)$/i', '.webp', $src );
-			$webp_path = preg_replace( '/\.(png|jpe?g)$/i', '.webp', str_replace( $uploads['baseurl'], $uploads['basedir'], $src ) );
+			$webp_url  = ignites_child_webp_name( $src );
+			$webp_path = ignites_child_webp_name( str_replace( $uploads['baseurl'], $uploads['basedir'], $src ) );
 			if ( strpos( $src, $uploads['baseurl'] ) !== 0 || ! file_exists( $webp_path ) ) {
 				return $m[0];
 			}
