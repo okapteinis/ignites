@@ -36,10 +36,14 @@ function ignites_child_enqueue() {
 	// Version by file mtime (not the static theme Version) so the ?ver= query
 	// busts browser + CDN caches on EVERY edit — a static ver kept serving
 	// stale CSS after edits (the 2026-06-09 unstyled-switcher regression).
-	// Serve the minified stylesheet when present (style.css stays readable on disk for the
-	// required WP theme header — ignites#32). Version by the served file's mtime.
+	// Serve the readable style.css, NOT style.min.css. The #34 csscompressor pass stripped the
+	// required whitespace around +/- inside clamp() (e.g. `clamp(1.5rem,1.2rem+1.25vw,2.25rem)`),
+	// which is INVALID CSS math → every `font-size: var(--text-*)` became invalid-at-computed-value
+	// and inherited 16px (titles + menu shrank). Browser-proven: spaced clamp → 36px, no-space → 16px.
+	// The minify saved ~0 bytes here (25,065 B vs the readable file), so it bought nothing. Re-enable
+	// only with a clamp-safe minifier that preserves whitespace inside calc()/clamp(). (ignites#36)
 	$child_min = get_stylesheet_directory() . '/style.min.css';
-	$use_min   = file_exists( $child_min );
+	$use_min   = false;
 	$child_css = $use_min ? $child_min : get_stylesheet_directory() . '/style.css';
 	wp_enqueue_style(
 		'ignites-child',
@@ -173,6 +177,11 @@ function ignites_child_inline_critical_css() {
 	);
 	echo "<style id=\"ignites-critical-css\">\n" . $css . "\n</style>\n";
 }
+// KEEP ENABLED (ignites#36): this block is LOAD-BEARING — since #34 dropped (dequeued)
+// bootstrap.min.css, critical.css is the SOLE source of the Bootstrap grid + 5 of the 6 @font-face
+// declarations. The FOUC + font-jump incident was caused by the ASYNC swap below (now disabled), NOT
+// by this inline block. With the sheets render-blocking, first paint applies the full cascade
+// (child body rule wins by source order → Inter / var(--text-base)), so no flash and no resize.
 add_action( 'wp_head', 'ignites_child_inline_critical_css', 2 );
 
 /**
@@ -216,7 +225,11 @@ function ignites_child_async_noncritical_css( $html, $handle ) {
 	}
 	return $async . '<noscript>' . $html . "</noscript>\n";
 }
-add_filter( 'style_loader_tag', 'ignites_child_async_noncritical_css', 10, 2 );
+// DISABLED 2026-06-15 (ignites#36, FOUC incident): see the note on ignites_child_inline_critical_css
+// above. Async-loading the 4 theme sheets broke the parent→child cascade at first paint (FOUC + font
+// jump). Sheets now load normally (render-blocking but correct). The other perf wins are untouched:
+// Bootstrap CSS/JS dequeue, jQuery-drop + vanilla main.js, InterVariable subset, WebP, minify, CF cache.
+// add_filter( 'style_loader_tag', 'ignites_child_async_noncritical_css', 10, 2 );
 
 /**
  * Defer theme + jQuery scripts (ignites#32). ClassicPress 6.2.9 predates the WP 6.3
