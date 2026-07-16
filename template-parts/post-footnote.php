@@ -35,10 +35,9 @@ $ignites_fn_kses = array(
 
 	<p class="fn-rss"><em>
 		<span class="fn-icon" aria-hidden="true"><?php ignites_child_footnote_icon( 'rss-fill.svg' ); ?></span>
-		<?php echo esc_html( $ignites_fn['rss_text'] ); ?>
-		<a href="<?php echo esc_url( $ignites_fn['feed'] ); ?>" target="_blank" rel="noopener"><?php echo esc_html( $ignites_fn['rss_label'] ); ?></a><?php
+		<?php echo esc_html( $ignites_fn['rss_pre'] ); ?><a href="<?php echo esc_url( $ignites_fn['feed'] ); ?>" target="_blank" rel="noopener"><?php echo esc_html( $ignites_fn['rss_label'] ); ?></a><?php
 		if ( ! empty( $ignites_fn['apple'] ) ) {
-			echo ' · <a href="' . esc_url( $ignites_fn['apple'] ) . '" target="_blank" rel="noopener">Apple Podcasts</a>';
+			echo esc_html( $ignites_fn['apple_join'] ) . '<a href="' . esc_url( $ignites_fn['apple'] ) . '" target="_blank" rel="noopener">Apple Podcasts</a>';
 		}
 		?>.
 	</em></p>
@@ -57,11 +56,15 @@ $ignites_fn_kses = array(
 			<input type="email" id="fn-email" name="email" required
 				placeholder="<?php echo esc_attr( $ignites_fn_ui['placeholder'] ); ?>" />
 			<input type="text" name="fn_website" class="fn-hp" tabindex="-1" autocomplete="off" aria-hidden="true" />
+			<button type="submit"><?php echo esc_html( $ignites_fn_ui['button'] ); ?></button>
+			<?php // interaction-only: invisible unless CF actually challenges; theme synced by JS before render (v1.3.1 P2). ?>
 			<div class="cf-turnstile"
 				data-sitekey="<?php echo esc_attr( IGNITES_FN_TURNSTILE_SITEKEY ); ?>"
-				data-language="<?php echo esc_attr( $ignites_fn_lang ); ?>"></div>
-			<button type="submit"><?php echo esc_html( $ignites_fn_ui['button'] ); ?></button>
-			<p class="fn-msg" role="status" aria-live="polite"></p>
+				data-language="<?php echo esc_attr( $ignites_fn_lang ); ?>"
+				data-appearance="interaction-only"
+				data-size="flexible"
+				data-theme="auto"></div>
+			<p class="fn-msg" role="status" aria-live="polite" hidden></p>
 			<p class="fn-fine"><?php echo esc_html( $ignites_fn_ui['fine'] ); ?></p>
 			<noscript><p class="fn-fine"><?php echo wp_kses( $ignites_fn_ui['nojs'], $ignites_fn_kses ); ?></p></noscript>
 		</form>

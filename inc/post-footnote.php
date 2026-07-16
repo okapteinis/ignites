@@ -27,6 +27,11 @@ const IGNITES_FN_LISTMONK_URL = 'http://127.0.0.1:22940/api/public/subscription'
 const IGNITES_FN_TURNSTILE_SITEKEY = '0x4AAAAAAD3RFq5uNKHa8R4_';
 const IGNITES_FN_TURNSTILE_VERIFY  = 'https://challenges.cloudflare.com/turnstile/v0/siteverify';
 
+// App-level rate-limit exemption — mirrors the CF edge "IP Access Rules" skip
+// (which exempts the same admin IP from the http_ratelimit phase), so operator
+// testing doesn't self-block (v1.3.1 P1c). Turnstile still applies.
+const IGNITES_FN_RL_EXEMPT_IPS = array( '46.109.199.200' );
+
 /**
  * Footnote config, keyed [category-slug][lang]. Copy is operator-authored
  * (the saites intro is lifted verbatim from the retired hand-typed footer).
@@ -39,11 +44,11 @@ function ignites_child_footnote_map() {
 					'Šis ir ikdienas saišu apkopojums — saites uz rakstiem, kurus izlasīju iepriekšējā dienā.',
 					'Padoms: maksas rakstu bieži var izlasīt, tā saiti sameklējot vietnē <a href="https://archive.ph" target="_blank" rel="noopener">archive.ph</a>; rakstu citā valodā var iztulkot ar <a href="https://hugo.lv/lv/Translate/Website" target="_blank" rel="noopener">hugo.lv</a>.',
 				),
-				'rss_text'  => 'Šo apkopojumu var lasīt arī RSS plūsmā:',
-				'rss_label' => 'saites',
+				'rss_pre'   => 'Šo vari lasīt arī savā ziņu lasītājā — šeit ir ',
+				'rss_label' => 'RSS plūsma',
 				'feed'      => 'https://ojars.kapteinis.lv/tema/saites/feed/',
 				'sub_head'  => 'Saņem saites e-pastā',
-				'sub_body'  => 'Īss ikdienas kopsavilkums ar to, ko izlasīju. Bez liekām vēstulēm — atrakstīties vari jebkurā brīdī.',
+				'sub_body'  => 'Īss ikdienas kopsavilkums ar visu, ko izlasīju — nekas vairāk.',
 				'list_uuid' => 'b79d6df1-305c-434f-a061-6de43732c0bd',
 			),
 			'en' => array(
@@ -51,51 +56,53 @@ function ignites_child_footnote_map() {
 					'This is a daily link digest — links to the articles I read the previous day.',
 					'Tip: a paywalled article can often be read by searching for its URL on <a href="https://archive.ph" target="_blank" rel="noopener">archive.ph</a>; an article in another language can be translated with <a href="https://hugo.lv/en/Translate/Website" target="_blank" rel="noopener">hugo.lv</a>.',
 				),
-				'rss_text'  => 'You can also follow this digest via RSS:',
-				'rss_label' => 'links',
+				'rss_pre'   => 'You can also read this in your feed reader — here\'s the ',
+				'rss_label' => 'RSS feed',
 				'feed'      => 'https://ojars.kapteinis.lv/en/category/links/feed/',
 				'sub_head'  => 'Get the links by email',
-				'sub_body'  => 'A short daily roundup of what I read. No spam, unsubscribe anytime.',
+				'sub_body'  => 'A short daily roundup of everything I read — nothing else.',
 				'list_uuid' => '6a611820-5a3b-4866-a8c4-8c82146d42da',
 			),
 		),
 		'teksti' => array(
 			'lv' => array(
 				'intro'     => array(),
-				'rss_text'  => 'Jaunos rakstus var lasīt arī RSS plūsmā:',
-				'rss_label' => 'blogs',
+				'rss_pre'   => 'Jaunos rakstus vari lasīt arī savā ziņu lasītājā — šeit ir ',
+				'rss_label' => 'RSS plūsma',
 				'feed'      => 'https://ojars.kapteinis.lv/tema/teksti/feed/',
 				'sub_head'  => 'Seko jaunajiem rakstiem',
-				'sub_body'  => 'Kad publicēju jaunu rakstu, atsūtīšu to tev e-pastā. Bez liekām vēstulēm.',
+				'sub_body'  => 'Kad publicēju jaunu rakstu, atsūtīšu to e-pastā — nekas vairāk.',
 				'list_uuid' => '336641a6-8220-4307-8a90-44987e905675',
 			),
 			'en' => array(
 				'intro'     => array(),
-				'rss_text'  => 'Follow new posts via RSS:',
-				'rss_label' => 'blog',
+				'rss_pre'   => 'You can also follow new posts in your feed reader — here\'s the ',
+				'rss_label' => 'RSS feed',
 				'feed'      => 'https://ojars.kapteinis.lv/en/category/blog/feed/',
 				'sub_head'  => 'Follow new posts',
-				'sub_body'  => 'When I publish something new, I\'ll email it to you. No spam.',
+				'sub_body'  => 'When I publish something new, I\'ll email it to you — nothing else.',
 				'list_uuid' => '23e2075b-4e90-480d-a892-e39cb1055c68',
 			),
 		),
 		'podkasts' => array(
 			'lv' => array(
 				'intro'     => array(),
-				'rss_text'  => 'Klausies un abonē:',
-				'rss_label' => 'RSS',
-				'feed'      => 'https://ojars.kapteinis.lv/tema/podkasts/feed/',
-				'apple'     => 'https://itunes.apple.com/lv/podcast/podkasts-ojars-kapteinis/id1204929568',
+				'rss_pre'    => 'Klausies savā podkāstu lietotnē — abonē ar ',
+				'rss_label'  => 'RSS',
+				'feed'       => 'https://ojars.kapteinis.lv/tema/podkasts/feed/',
+				'apple'      => 'https://itunes.apple.com/lv/podcast/podkasts-ojars-kapteinis/id1204929568',
+				'apple_join' => ' vai ',
 				'sub_head'  => 'Uzzini par jaunām epizodēm',
 				'sub_body'  => 'Kad iznāk jauna epizode, atsūtīšu ziņu e-pastā.',
 				'list_uuid' => '31a0127d-84c1-4da7-a3e3-90e699e78faa',
 			),
 			'en' => array(
 				'intro'     => array(),
-				'rss_text'  => 'Listen and subscribe:',
-				'rss_label' => 'RSS',
-				'feed'      => 'https://ojars.kapteinis.lv/en/category/podcast/feed/',
-				'apple'     => 'https://itunes.apple.com/lv/podcast/podkasts-ojars-kapteinis/id1204929568',
+				'rss_pre'    => 'Listen in your podcast app — subscribe by ',
+				'rss_label'  => 'RSS',
+				'feed'       => 'https://ojars.kapteinis.lv/en/category/podcast/feed/',
+				'apple'      => 'https://itunes.apple.com/lv/podcast/podkasts-ojars-kapteinis/id1204929568',
+				'apple_join' => ' or on ',
 				'sub_head'  => 'Get new episodes',
 				'sub_body'  => 'When a new episode is out, I\'ll drop you an email.',
 				'list_uuid' => 'f230e0a0-0964-4cf7-b019-18b246a84984',
@@ -114,8 +121,10 @@ function ignites_child_footnote_ui( $lang ) {
 		'lv' => array(
 			'placeholder' => 'e-pasts',
 			'button'      => 'Pierakstīties',
-			'fine'        => 'Pierakstīšanos apstiprināsi e-pastā.',
-			'ok'          => 'Gandrīz gatavs — apstiprini pierakstīšanos savā e-pastā.',
+			// The privacy promise (operator copy, 2026-07-16) — same for all categories.
+			'fine'        => 'Visas adreses glabāju tikai savā privātajā datubāzē. Nevienam tās nenodošu, neizmantošu citiem mērķiem un nesūtīšu mēstules. Pierakstīšanos apstiprināsi e-pastā.',
+			'ok'          => 'Pārbaudi e-pastu, lai apstiprinātu pierakstīšanos.',
+			'ratelimited' => 'Par daudz mēģinājumu — uzgaidi brīdi.',
 			'invalid'     => 'Lūdzu, ievadi derīgu e-pasta adresi.',
 			'error'       => 'Neizdevās. Lūdzu, mēģini vēlāk.',
 			'social'      => 'Sociālie tīkli',
@@ -124,8 +133,9 @@ function ignites_child_footnote_ui( $lang ) {
 		'en' => array(
 			'placeholder' => 'email',
 			'button'      => 'Subscribe',
-			'fine'        => 'You\'ll confirm by email.',
-			'ok'          => 'Almost done — confirm the subscription in your email.',
+			'fine'        => 'I keep every address in my own private database. I won\'t share it, use it for anything else, or send you spam. You\'ll confirm your subscription by email.',
+			'ok'          => 'Check your email to confirm.',
+			'ratelimited' => 'Too many tries — give it a minute.',
 			'invalid'     => 'Please enter a valid email address.',
 			'error'       => 'Something went wrong. Please try again later.',
 			'social'      => 'Social networks',
@@ -145,7 +155,9 @@ function ignites_child_footnote_socials() {
 	return array(
 		array( 'name' => 'Mastodon', 'url' => 'https://kapteinis.lv/@ojars', 'icon' => 'mastodon.svg' ),
 		array( 'name' => 'PixelFed', 'url' => 'https://pixel.kapteinis.lv/ojars', 'icon' => 'pixelfed.svg' ),
-		array( 'name' => 'BookWyrm', 'url' => 'https://book.kapteinis.lv/user/ojars', 'icon' => 'bookwyrm.png' ),
+		// book.svg (Bootstrap Icons) instead of the colored bookwyrm.png so the
+		// whole row is one monochrome currentColor set (v1.3.1 P4).
+		array( 'name' => 'BookWyrm', 'url' => 'https://book.kapteinis.lv/user/ojars', 'icon' => 'book.svg' ),
 		array( 'name' => 'Forgejo', 'url' => 'https://git.kapteinis.lv/ojars', 'icon' => 'forgejo.svg' ),
 		array( 'name' => 'Bluesky', 'url' => 'https://bsky.app/profile/ojars.kapteinis.lv', 'icon' => 'bluesky.svg' ),
 	);
@@ -348,9 +360,13 @@ function ignites_child_footnote_subscribe( WP_REST_Request $req ) {
 	// inbox (2026-07-16 security-review finding); the exact address the user
 	// typed still goes to Listmonk untouched.
 	$email_key = strtolower( preg_replace( '/\+[^@]*@/', '@', $email ) );
-	if ( ! ignites_child_footnote_under_limit( 'ip_' . $ip, 5, HOUR_IN_SECONDS )
-		|| ! ignites_child_footnote_under_limit( 'em_' . $email_key, 2, DAY_IN_SECONDS ) ) {
-		return new WP_REST_Response( array( 'message' => $ui['error'] ), 429 );
+	if ( ! in_array( $ip, IGNITES_FN_RL_EXEMPT_IPS, true )
+		&& ( ! ignites_child_footnote_under_limit( 'ip_' . $ip, 5, HOUR_IN_SECONDS )
+			|| ! ignites_child_footnote_under_limit( 'em_' . $email_key, 2, DAY_IN_SECONDS ) ) ) {
+		// 429 carries its OWN copy so the anti-abuse brake stops masquerading
+		// as a server failure (v1.3.1 P1b); exempt admin IPs skip both limits
+		// (P1c — mirrors the CF edge skip). Turnstile still applies to all.
+		return new WP_REST_Response( array( 'message' => $ui['ratelimited'] ), 429 );
 	}
 
 	// Payload safety: $email passed is_email (no CR/LF/quotes survive),
