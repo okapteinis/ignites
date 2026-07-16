@@ -1,0 +1,147 @@
+/* ==========================================================================
+   Post footnote — per-category RSS + subscribe + social (single posts only).
+   Sits in the typed-footer slot: italic intro above the entry-footer's
+   bordered zone. Uses theme tokens so light/dark both inherit correctly.
+   ========================================================================== */
+
+.post-footnote {
+	margin-top: 2.5rem;
+	padding-top: 1.5rem;
+	border-top: 1px solid var(--color-divider);
+	font-family: var(--font-body);
+}
+
+.post-footnote .fn-intro,
+.post-footnote .fn-rss {
+	color: var(--color-text-muted);
+	margin: 0 0 0.75em;
+}
+
+.post-footnote .fn-icon svg,
+.post-footnote .fn-icon img {
+	width: 1.1em;
+	height: 1.1em;
+	vertical-align: -0.18em;
+}
+
+/* Subscribe block — quiet card, one accent. */
+.fn-subscribe {
+	margin: 1.5rem 0;
+	padding: 1.25rem 1.5rem;
+	background: var(--color-surface-2);
+	border-radius: var(--radius-md);
+}
+
+.fn-subscribe-head {
+	font-family: var(--font-body);
+	font-size: 1.1rem;
+	font-weight: 600;
+	margin: 0 0 0.35em;
+}
+
+.fn-subscribe-body {
+	color: var(--color-text-muted);
+	font-size: 0.95rem;
+	margin: 0 0 0.9em;
+}
+
+.fn-subscribe-form {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.6rem;
+	align-items: center;
+}
+
+.fn-subscribe-form input[type="email"] {
+	flex: 1 1 14rem;
+	min-width: 0;
+	padding: 0.55em 0.9em;
+	border: 1px solid var(--color-border);
+	border-radius: var(--radius-sm);
+	background: var(--color-surface);
+	color: var(--color-text);
+	font: inherit;
+}
+
+.fn-subscribe-form input[type="email"]:focus-visible,
+.fn-subscribe-form button:focus-visible,
+.fn-social a:focus-visible {
+	outline: 2px solid var(--color-primary);
+	outline-offset: 2px;
+}
+
+.fn-subscribe-form button {
+	padding: 0.55em 1.3em;
+	border: 0;
+	border-radius: var(--radius-sm);
+	background: var(--color-primary);
+	color: var(--color-text-inverse);
+	font: inherit;
+	font-weight: 600;
+	cursor: pointer;
+}
+
+.fn-subscribe-form button:hover {
+	background: var(--color-primary-hover);
+}
+
+.fn-subscribe-form button[disabled] {
+	opacity: 0.6;
+	cursor: wait;
+}
+
+/* Honeypot: visually removed, still in the DOM for bots. */
+.fn-hp {
+	position: absolute !important;
+	left: -9999px !important;
+	width: 1px;
+	height: 1px;
+	opacity: 0;
+}
+
+.fn-subscribe-form .cf-turnstile {
+	flex-basis: 100%;
+	margin: 0.25rem 0;
+}
+
+.fn-msg {
+	flex-basis: 100%;
+	margin: 0;
+	font-size: 0.9rem;
+}
+
+.fn-msg:empty {
+	display: none;
+}
+
+.fn-fine {
+	flex-basis: 100%;
+	margin: 0;
+	font-size: 0.875rem;
+	color: var(--color-text-faint);
+}
+
+/* Social row — compact icon list. */
+.fn-social {
+	list-style: none;
+	display: flex;
+	gap: 1rem;
+	margin: 1rem 0 0;
+	padding: 0;
+}
+
+.fn-social a {
+	color: var(--color-text-muted);
+	display: inline-flex;
+	padding: 0.25rem;
+}
+
+.fn-social a:hover {
+	color: var(--color-primary);
+}
+
+.fn-social .fn-icon svg,
+.fn-social .fn-icon img {
+	width: 20px;
+	height: 20px;
+}

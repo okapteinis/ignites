@@ -56,6 +56,11 @@
 			?>
 		</div>
 
-		<?php get_template_part( 'template-parts/entry', 'footer' ); ?>
+		<?php
+		if ( is_singular( 'post' ) ) {
+			get_template_part( 'template-parts/post', 'footnote' );
+		}
+		get_template_part( 'template-parts/entry', 'footer' );
+		?>
 	</div>
 </article>

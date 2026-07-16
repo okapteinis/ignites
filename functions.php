@@ -9,6 +9,11 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
+// Per-category post footnote (RSS + Listmonk subscribe + social row) + the
+// saites homepage exclusion — v1.3.0. Kept in its own file so this one's
+// weekly-restorer marker block below stays untouched by footnote work.
+require_once get_stylesheet_directory() . '/inc/post-footnote.php';
+
 /**
  * Load child theme translations (closes ojars/ignites#4). The theme uses
  * the `ignites-child` text domain throughout — without this hook every
