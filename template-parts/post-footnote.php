@@ -43,8 +43,8 @@ $ignites_fn_kses = array(
 	</em></p>
 
 	<div class="fn-subscribe">
-		<h2 class="fn-subscribe-head"><?php echo esc_html( $ignites_fn['sub_head'] ); ?></h2>
-		<p class="fn-subscribe-body"><?php echo esc_html( $ignites_fn['sub_body'] ); ?></p>
+		<h2 class="fn-subscribe-head"><?php echo esc_html( $ignites_fn_ui['sub_hook'] ); ?></h2>
+		<p class="fn-subscribe-body"><?php echo esc_html( $ignites_fn['sub_ask'] ); ?></p>
 		<form class="fn-subscribe-form"
 			method="get" action="https://vestule.kapteinis.lv/subscription/form"
 			data-rest="<?php echo esc_url( rest_url( 'ignites/v1/subscribe' ) ); ?>"
@@ -70,15 +70,24 @@ $ignites_fn_kses = array(
 		</form>
 	</div>
 
-	<ul class="fn-social" aria-label="<?php echo esc_attr( $ignites_fn_ui['social'] ); ?>">
-		<?php foreach ( ignites_child_footnote_socials() as $ignites_fn_s ) : ?>
-			<li>
-				<a href="<?php echo esc_url( $ignites_fn_s['url'] ); ?>" rel="me noopener" target="_blank"
-					aria-label="<?php echo esc_attr( $ignites_fn_s['name'] ); ?>" title="<?php echo esc_attr( $ignites_fn_s['name'] ); ?>">
-					<span class="fn-icon" aria-hidden="true"><?php ignites_child_footnote_icon( $ignites_fn_s['icon'] ); ?></span>
-				</a>
-			</li>
-		<?php endforeach; ?>
-	</ul>
+	<?php // The About-page (/par-mani) labelled-card solution, reused verbatim: same
+	// .social-links/.social-list/.social-link classes (styled in style.css) so it
+	// renders identically. Heading = "Follow me on socials" (v1.3.2). ?>
+	<section class="social-links" aria-label="<?php echo esc_attr( $ignites_fn_ui['social'] ); ?>">
+		<h2><?php echo esc_html( $ignites_fn_ui['social_head'] ); ?></h2>
+		<ul class="social-list">
+			<?php foreach ( ignites_child_footnote_socials() as $ignites_fn_s ) : ?>
+				<li>
+					<a class="social-link" href="<?php echo esc_url( $ignites_fn_s['url'] ); ?>" rel="me noopener" target="_blank">
+						<span class="social-icon" aria-hidden="true"><?php ignites_child_footnote_icon( $ignites_fn_s['icon'] ); ?></span>
+						<span class="social-label">
+							<span class="social-name"><?php echo esc_html( $ignites_fn_s['name'] ); ?></span>
+							<span class="social-handle"><?php echo esc_html( $ignites_fn_s['handle'] ); ?></span>
+						</span>
+					</a>
+				</li>
+			<?php endforeach; ?>
+		</ul>
+	</section>
 
 </aside>

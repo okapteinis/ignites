@@ -74,8 +74,7 @@
 }
 
 .fn-subscribe-form input[type="email"]:focus-visible,
-.fn-subscribe-form button:focus-visible,
-.fn-social a:focus-visible {
+.fn-subscribe-form button:focus-visible {
 	outline: 2px solid var(--color-primary);
 	outline-offset: 2px;
 }
@@ -148,27 +147,10 @@
 	max-width: 34rem;
 }
 
-/* Social row — compact icon list. */
-.fn-social {
-	list-style: none;
-	display: flex;
-	gap: 1rem;
-	margin: 1rem 0 0;
-	padding: 0;
-}
-
-.fn-social a {
-	color: var(--color-text-muted);
-	display: inline-flex;
-	padding: 0.25rem;
-}
-
-.fn-social a:hover {
-	color: var(--color-primary);
-}
-
-.fn-social .fn-icon svg,
-.fn-social .fn-icon img {
-	width: 20px;
-	height: 20px;
+/* Social row: the About-page card solution (.social-links/.social-list/
+   .social-link) is styled in style.css and reused here as-is. Only the
+   in-footnote spacing is nudged so the section sits right under the subscribe
+   card without an over-large gap (v1.3.2). */
+.post-footnote .social-links {
+	margin-top: 2rem;
 }
