@@ -1,7 +1,14 @@
 /* ==========================================================================
-   Post footnote — per-category RSS + subscribe + social (single posts only).
-   Sits in the typed-footer slot: italic intro above the entry-footer's
-   bordered zone. Uses theme tokens so light/dark both inherit correctly.
+   Post footnote — v1.4.0 three-section redesign (single posts only).
+
+   One visual system: a single top divider on .post-footnote, the serif
+   display face for the umbrella hook + every section heading (kills the
+   v1.3.x sans-subscribe vs serif-social clash), one card family (the
+   About-page .social-link cards, styled in style.css), and consistent
+   .fn-section spacing. The email input is the only "boxed" interactive
+   element — the v1.3.x tinted subscribe slab is gone. The reserved
+   .fn-comments section (S3) inherits this same family when it lands.
+   Uses theme tokens throughout so light/dark both inherit correctly.
    ========================================================================== */
 
 .post-footnote {
@@ -11,41 +18,36 @@
 	font-family: var(--font-body);
 }
 
-.post-footnote .fn-intro,
-.post-footnote .fn-rss {
+/* 0. Post-context note — italic close of the post itself (saites only). */
+.post-footnote .fn-context {
 	color: var(--color-text-muted);
 	margin: 0 0 0.75em;
 }
 
-.post-footnote .fn-icon svg,
-.post-footnote .fn-icon img {
-	width: 1.1em;
-	height: 1.1em;
-	vertical-align: -0.18em;
-}
-
-/* Subscribe block — quiet card, one accent. Airy internal padding and a
-   consistent vertical rhythm (v1.3.1 P3 — the v1.3.0 card hugged the left
-   edge and felt cramped). */
-.fn-subscribe {
-	margin: 2rem 0;
-	padding: 1.75rem 2rem 1.5rem;
-	background: var(--color-surface-2);
-	border-radius: var(--radius-md);
-}
-
-@media (max-width: 600px) {
-	.fn-subscribe {
-		padding: 1.25rem 1.25rem 1rem;
-	}
-}
-
-.fn-subscribe-head {
-	font-family: var(--font-body);
-	font-size: 1.15rem;
+/* Umbrella hook — one heading voice for the whole footnote family. */
+.fn-hook {
+	font-family: var(--font-display);
+	font-size: var(--text-xl);
 	font-weight: 600;
-	margin: 0 0 0.4em;
+	margin: 1.75rem 0 0;
 }
+
+/* Sections — uniform rhythm; headings match .social-links h2 (style.css)
+   so S1/S2/S3 read as siblings. */
+.post-footnote .fn-section {
+	margin: 1.5rem 0 0;
+}
+
+.post-footnote .fn-section h2 {
+	font-family: var(--font-display);
+	font-size: var(--text-lg);
+	margin: 0 0 var(--space-6);
+}
+
+/* --------------------------------------------------------------------------
+   S1 — subscribe. No card slab: the form sits directly in the section and
+   the email field is the single boxed element.
+   -------------------------------------------------------------------------- */
 
 .fn-subscribe-body {
 	color: var(--color-text-muted);
@@ -65,6 +67,7 @@
 .fn-subscribe-form input[type="email"] {
 	flex: 1 1 14rem;
 	min-width: 0;
+	max-width: 22rem;
 	padding: 0.55em 0.9em;
 	border: 1px solid var(--color-border);
 	border-radius: var(--radius-sm);
@@ -147,10 +150,20 @@
 	max-width: 34rem;
 }
 
-/* Social row: the About-page card solution (.social-links/.social-list/
-   .social-link) is styled in style.css and reused here as-is. Only the
-   in-footnote spacing is nudged so the section sits right under the subscribe
-   card without an over-large gap (v1.3.2). */
+/* --------------------------------------------------------------------------
+   S2 — follow. Card look comes from style.css (.social-links family, shared
+   with the About page); inside the footnote the section system owns the
+   divider + spacing, so neutralize the About-context frame here.
+   -------------------------------------------------------------------------- */
+
 .post-footnote .social-links {
-	margin-top: 2rem;
+	margin-top: 1.5rem;
+	padding-top: 0;
+	border-top: 0;
 }
+
+/* --------------------------------------------------------------------------
+   S3 — fediverse comments (reserved). Renders empty today; when the build
+   lands it arrives as `.fn-section.fn-comments` and inherits the section
+   heading + spacing rules above — no new visual system needed.
+   -------------------------------------------------------------------------- */

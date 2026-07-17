@@ -1,7 +1,9 @@
 <?php
 /**
- * Ignites Child — per-category post footnote: RSS line + Listmonk subscribe
- * + social row, plus the saites homepage exclusion. (v1.3.0)
+ * Ignites Child — per-category post footnote: post-context note + umbrella
+ * hook + subscribe + follow-grid + reserved fediverse-comments slot, plus
+ * the saites homepage exclusion. (v1.4.0 three-section redesign; subscribe
+ * REST handler unchanged since v1.3.1.)
  *
  * Feed URLs and Listmonk list UUIDs are HARDCODED by design: all 6 URLs are
  * verified live, while runtime get_category_feed_link() derivation was only
@@ -40,66 +42,62 @@ function ignites_child_footnote_map() {
 	return array(
 		'saites' => array(
 			'lv' => array(
-				'intro'     => array(
+				// Post-context note (v1.4.0): closes the post itself — saites is the
+				// only category with one (podkasts' old prose was pure RSS/Apple
+				// pointers, now S2 buttons — operator directive 2026-07-17: never
+				// the same destination as both prose and button).
+				'context'     => array(
 					'Šis ir ikdienas saišu apkopojums — saites uz rakstiem, kurus izlasīju iepriekšējā dienā.',
 					'Padoms: maksas rakstu bieži var izlasīt, tā saiti sameklējot vietnē <a href="https://archive.today" target="_blank" rel="noopener">archive.today</a>; rakstu citā valodā var iztulkot ar <a href="https://hugo.lv/lv/Translate/Website" target="_blank" rel="noopener">hugo.lv</a>.',
 				),
-				'rss_pre'   => 'Šo vari lasīt arī savā ziņu lasītājā — šeit ir ',
-				'rss_label' => 'RSS plūsma',
-				'feed'      => 'https://ojars.kapteinis.lv/tema/saites/feed/',
-				'sub_ask'   => 'Pieraksties, lai saņemtu manu ikdienas apkopojumu ar visu, ko izlasu. Neko vairāk.',
-				'list_uuid' => 'b79d6df1-305c-434f-a061-6de43732c0bd',
+				'feed'        => 'https://ojars.kapteinis.lv/tema/saites/feed/',
+				'feed_handle' => 'tema/saites',
+				'sub_ask'     => 'Pieraksties, lai saņemtu manu ikdienas apkopojumu ar visu, ko izlasu. Neko vairāk.',
+				'list_uuid'   => 'b79d6df1-305c-434f-a061-6de43732c0bd',
 			),
 			'en' => array(
-				'intro'     => array(
+				'context'     => array(
 					'This is a daily link digest — links to the articles I read the previous day.',
 					'Tip: a paywalled article can often be read by searching for its URL on <a href="https://archive.today" target="_blank" rel="noopener">archive.today</a>; an article in another language can be translated with <a href="https://hugo.lv/en/Translate/Website" target="_blank" rel="noopener">hugo.lv</a>.',
 				),
-				'rss_pre'   => 'You can also read this in your feed reader — here\'s the ',
-				'rss_label' => 'RSS feed',
-				'feed'      => 'https://ojars.kapteinis.lv/en/category/links/feed/',
-				'sub_ask'   => 'Subscribe to my daily roundup of everything I read. Nothing else.',
-				'list_uuid' => '6a611820-5a3b-4866-a8c4-8c82146d42da',
+				'feed'        => 'https://ojars.kapteinis.lv/en/category/links/feed/',
+				'feed_handle' => 'category/links',
+				'sub_ask'     => 'Subscribe to my daily roundup of everything I read. Nothing else.',
+				'list_uuid'   => '6a611820-5a3b-4866-a8c4-8c82146d42da',
 			),
 		),
 		'teksti' => array(
 			'lv' => array(
-				'intro'     => array(),
-				'rss_pre'   => 'Rakstus vari lasīt arī savā ziņu lasītājā — šeit ir ',
-				'rss_label' => 'RSS',
-				'feed'      => 'https://ojars.kapteinis.lv/tema/teksti/feed/',
-				'sub_ask'   => 'Pieraksties, lai saņemtu manus rakstus. Neko vairāk.',
-				'list_uuid' => '336641a6-8220-4307-8a90-44987e905675',
+				'context'     => array(),
+				'feed'        => 'https://ojars.kapteinis.lv/tema/teksti/feed/',
+				'feed_handle' => 'tema/teksti',
+				'sub_ask'     => 'Pieraksties, lai saņemtu manus rakstus. Neko vairāk.',
+				'list_uuid'   => '336641a6-8220-4307-8a90-44987e905675',
 			),
 			'en' => array(
-				'intro'     => array(),
-				'rss_pre'   => 'You can also read posts in your feed reader — here\'s the ',
-				'rss_label' => 'RSS',
-				'feed'      => 'https://ojars.kapteinis.lv/en/category/blog/feed/',
-				'sub_ask'   => 'Subscribe to my blog posts. Nothing else.',
-				'list_uuid' => '23e2075b-4e90-480d-a892-e39cb1055c68',
+				'context'     => array(),
+				'feed'        => 'https://ojars.kapteinis.lv/en/category/blog/feed/',
+				'feed_handle' => 'category/blog',
+				'sub_ask'     => 'Subscribe to my blog posts. Nothing else.',
+				'list_uuid'   => '23e2075b-4e90-480d-a892-e39cb1055c68',
 			),
 		),
 		'podkasts' => array(
 			'lv' => array(
-				'intro'     => array(),
-				'rss_pre'    => 'Klausies raidierakstu kur un kā vien vēlies, šeit ir saites uz ',
-				'rss_label'  => 'RSS',
-				'feed'       => 'https://ojars.kapteinis.lv/tema/podkasts/feed/',
-				'apple'      => 'https://itunes.apple.com/lv/podcast/podkasts-ojars-kapteinis/id1204929568',
-				'apple_join' => ' un/vai ',
-				'sub_ask'   => 'Pieraksties, lai saņemtu manas jaunākās epizodes. Neko vairāk.',
-				'list_uuid' => '31a0127d-84c1-4da7-a3e3-90e699e78faa',
+				'context'     => array(),
+				'feed'        => 'https://ojars.kapteinis.lv/tema/podkasts/feed/',
+				'feed_handle' => 'tema/podkasts',
+				'apple'       => 'https://itunes.apple.com/lv/podcast/podkasts-ojars-kapteinis/id1204929568',
+				'sub_ask'     => 'Pieraksties, lai saņemtu manas jaunākās epizodes. Neko vairāk.',
+				'list_uuid'   => '31a0127d-84c1-4da7-a3e3-90e699e78faa',
 			),
 			'en' => array(
-				'intro'     => array(),
-				'rss_pre'    => 'Listen to the podcast wherever and however you like, here are links to ',
-				'rss_label'  => 'RSS',
-				'feed'       => 'https://ojars.kapteinis.lv/en/category/podcast/feed/',
-				'apple'      => 'https://itunes.apple.com/lv/podcast/podkasts-ojars-kapteinis/id1204929568',
-				'apple_join' => ' and/or ',
-				'sub_ask'   => 'Subscribe to my newest podcast episodes. Nothing else.',
-				'list_uuid' => 'f230e0a0-0964-4cf7-b019-18b246a84984',
+				'context'     => array(),
+				'feed'        => 'https://ojars.kapteinis.lv/en/category/podcast/feed/',
+				'feed_handle' => 'category/podcast',
+				'apple'       => 'https://itunes.apple.com/lv/podcast/podkasts-ojars-kapteinis/id1204929568',
+				'sub_ask'     => 'Subscribe to my newest podcast episodes. Nothing else.',
+				'list_uuid'   => 'f230e0a0-0964-4cf7-b019-18b246a84984',
 			),
 		),
 	);
@@ -115,22 +113,24 @@ function ignites_child_footnote_ui( $lang ) {
 		'lv' => array(
 			'placeholder' => 'e-pasts',
 			'button'      => 'Pierakstīties',
-			// Playful hook + the per-category ask + privacy promise (operator copy,
-			// 2026-07-16, v1.3.2). Same hook/fine/social_head for all categories.
-			'sub_hook'    => 'Ne velti tu noritināji līdz pašai apakšai.',
+			// Umbrella hook heading over ALL footnote sections (operator-verbatim
+			// LV, 2026-07-17 v1.4.0 redesign; replaces the v1.3.2 sub_hook).
+			'hook'        => 'Tu neesi nonācis šeit veltīgi!',
 			'fine'        => 'Visas adreses glabāju tikai savā privātajā datubāzē. Ar tām nedalīšos, neizmantošu citiem mērķiem un nesūtīšu mēstules. Pierakstīšanos jāapstiprina e-pastā, un atrakstīties var, kad vien ir tāda vēlme.',
 			'ok'          => 'Pārbaudi e-pastu, lai apstiprinātu pierakstīšanos.',
 			'ratelimited' => 'Par daudz mēģinājumu — uzgaidi brīdi.',
 			'invalid'     => 'Lūdzu, ievadi derīgu e-pasta adresi.',
 			'error'       => 'Neizdevās. Lūdzu, mēģini vēlāk.',
 			'social'      => 'Sociālie tīkli',
+			// TODO(operator): confirm final LV wording of the follow-section
+			// heading before it's considered settled (task directive 2026-07-17).
 			'social_head' => 'Seko man sociālajos tīklos',
 			'nojs'        => 'Pierakstīties var arī <a href="https://vestule.kapteinis.lv/subscription/form" target="_blank" rel="noopener">abonēšanas lapā</a>.',
 		),
 		'en' => array(
 			'placeholder' => 'email',
 			'button'      => 'Subscribe',
-			'sub_hook'    => 'You didn\'t scroll all the way down here for nothing.',
+			'hook'        => 'You didn\'t scroll all the way down here for nothing.',
 			'fine'        => 'I keep every address in my own private database. I won\'t share it, use it for anything else, or send you spam. You\'ll confirm your subscription by email, and can unsubscribe whenever you want.',
 			'ok'          => 'Check your email to confirm.',
 			'ratelimited' => 'Too many tries — give it a minute.',
@@ -146,8 +146,9 @@ function ignites_child_footnote_ui( $lang ) {
 
 /**
  * Social follow set — the SAME labelled-card solution as the /par-mani (About)
- * page (icon + name + handle), the 4 fediverse profiles, no Bluesky (operator
- * decision 2026-07-17, v1.3.2). URLs/handles mirror the About page's customizer
+ * page (icon + name + handle). Bluesky RE-ADDED per the 2026-07-17 v1.4.0
+ * redesign directive (supersedes the v1.3.2 no-Bluesky decision); its icon
+ * was already vendored. URLs/handles mirror the About page's customizer
  * mods; icons are the theme-bundled set (bookwyrm.png matches About — in the
  * card layout the colored PNG reads fine, unlike the v1.3.1 icon-only row).
  */
@@ -157,7 +158,57 @@ function ignites_child_footnote_socials() {
 		array( 'name' => 'PixelFed', 'url' => 'https://pixel.kapteinis.lv/ojars',   'handle' => '@ojars@pixel.kapteinis.lv', 'icon' => 'pixelfed.svg' ),
 		array( 'name' => 'BookWyrm', 'url' => 'https://book.kapteinis.lv/user/ojars', 'handle' => '@ojars@book.kapteinis.lv',  'icon' => 'bookwyrm.png' ),
 		array( 'name' => 'Forgejo',  'url' => 'https://git.kapteinis.lv/ojars',     'handle' => '@ojars@git.kapteinis.lv',   'icon' => 'forgejo.svg' ),
+		array( 'name' => 'Bluesky',  'url' => 'https://bsky.app/profile/ojars.kapteinis.lv', 'handle' => 'ojars.kapteinis.lv', 'icon' => 'bluesky.svg' ),
 	);
+}
+
+/**
+ * SECTION 2 follow-grid cards: the 5 profile cards + a per-category/language
+ * RSS card (feed URL straight from the hardcoded map above) + an Apple
+ * Podcasts card on podcast posts only. The RSS card RETIRES the v1.3.x
+ * standalone prose RSS line — a destination appears as a button OR prose,
+ * never both (operator directive 2026-07-17).
+ * TODO(operator): confirm the LV-visible RSS/Apple card handle strings
+ * ('feed_handle' paths + the show name) before they're considered settled.
+ */
+function ignites_child_footnote_follow_cards( $slug, $lang ) {
+	$map   = ignites_child_footnote_map();
+	$cat   = $map[ $slug ][ $lang ];
+	$cards = ignites_child_footnote_socials();
+
+	$cards[] = array( 'name' => 'RSS', 'url' => $cat['feed'], 'handle' => $cat['feed_handle'], 'icon' => 'rss-fill.svg' );
+
+	if ( ! empty( $cat['apple'] ) ) {
+		$cards[] = array( 'name' => 'Apple Podcasts', 'url' => $cat['apple'], 'handle' => 'Ojārs Kapteinis', 'icon' => 'applepodcasts.svg' );
+	}
+
+	return $cards;
+}
+
+/**
+ * SECTION 3 — fediverse comments (RESERVED SLOT ONLY, v1.4.0).
+ *
+ * PINNED CONTRACT: the post's linked Mastodon status URL lives in the
+ * IGNITES_FN_TOOT_META post meta ('ignites_fn_toot_url'). The later
+ * fediverse-comments build (separate recon — reply fetch + the
+ * "discuss on the fediverse" link) MUST read and write this SAME key.
+ *
+ * Today this renders NOTHING for every post (no live fetch, no JS): the
+ * meta is never populated yet, and an empty meta short-circuits before any
+ * output. The section's look is already specified by the shared .fn-section
+ * family in assets/css/post-footnote.css, so the future content slots in
+ * without a new visual system.
+ */
+const IGNITES_FN_TOOT_META = 'ignites_fn_toot_url';
+
+function ignites_child_footnote_comments( $post_id, $lang ) {
+	$toot = (string) get_post_meta( $post_id, IGNITES_FN_TOOT_META, true );
+	if ( '' === $toot ) {
+		return; // No linked toot — render nothing (currently: every post).
+	}
+	// Reserved: future build renders here as
+	// <section class="fn-section fn-comments"><h2>…</h2>…</section>
+	// using the same heading/spacing/card family as sections 1–2.
 }
 
 /**
