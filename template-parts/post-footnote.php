@@ -38,13 +38,13 @@ $ignites_fn_kses = array(
 	'a' => array( 'href' => array(), 'target' => array(), 'rel' => array() ),
 );
 ?>
-<aside class="post-footnote">
+<aside class="post-footnote" aria-labelledby="fn-hook">
 
 	<?php foreach ( $ignites_fn['context'] as $ignites_fn_para ) : ?>
 		<p class="fn-context"><em><?php echo wp_kses( $ignites_fn_para, $ignites_fn_kses ); ?></em></p>
 	<?php endforeach; ?>
 
-	<h2 class="fn-hook"><?php echo esc_html( $ignites_fn_ui['hook'] ); ?></h2>
+	<h2 class="fn-hook" id="fn-hook"><?php echo esc_html( $ignites_fn_ui['hook'] ); ?></h2>
 
 	<section class="fn-section fn-subscribe">
 		<p class="fn-subscribe-body"><?php echo esc_html( $ignites_fn['sub_ask'] ); ?></p>
@@ -77,11 +77,11 @@ $ignites_fn_kses = array(
 	// .social-list/.social-link classes (styled in style.css) so cards render
 	// identically; footnote-local spacing overrides live in post-footnote.css. ?>
 	<section class="fn-section fn-follow social-links" aria-label="<?php echo esc_attr( $ignites_fn_ui['social'] ); ?>">
-		<h2><?php echo esc_html( $ignites_fn_ui['social_head'] ); ?></h2>
+		<h3><?php echo esc_html( $ignites_fn_ui['social_head'] ); ?></h3>
 		<ul class="social-list">
-			<?php foreach ( ignites_child_footnote_follow_cards( $ignites_fn_slug, $ignites_fn_lang ) as $ignites_fn_s ) : ?>
+			<?php foreach ( ignites_child_footnote_follow_cards( $ignites_fn ) as $ignites_fn_s ) : ?>
 				<li>
-					<a class="social-link" href="<?php echo esc_url( $ignites_fn_s['url'] ); ?>" rel="me noopener" target="_blank">
+					<a class="social-link" href="<?php echo esc_url( $ignites_fn_s['url'] ); ?>" rel="<?php echo esc_attr( $ignites_fn_s['rel'] ); ?>" target="_blank">
 						<span class="social-icon" aria-hidden="true"><?php ignites_child_footnote_icon( $ignites_fn_s['icon'] ); ?></span>
 						<span class="social-label">
 							<span class="social-name"><?php echo esc_html( $ignites_fn_s['name'] ); ?></span>
@@ -98,7 +98,7 @@ $ignites_fn_kses = array(
 	<?php
 	// S3 — reserved fediverse-comments slot: outputs NOTHING until the post
 	// carries a linked toot in the pinned IGNITES_FN_TOOT_META post meta.
-	ignites_child_footnote_comments( get_the_ID(), $ignites_fn_lang );
+	ignites_child_footnote_comments( get_the_ID() );
 	?>
 
 </aside>

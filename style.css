@@ -5,7 +5,7 @@ Description:  Modern editorial redesign of the Ignites theme for ojars.kapteinis
 Author:       Ojārs Kapteinis
 Author URI:   https://ojars.kapteinis.lv
 Template:     ignites-nightly
-Version:      1.4.0
+Version:      1.4.1
 License:      GPL-2.0-or-later
 License URI:  http://www.gnu.org/licenses/gpl-2.0.html
 Text Domain:  ignites-child
@@ -1215,7 +1215,11 @@ ul.primary-menu li:hover > a {
 	padding-top: var(--space-8);
 	border-top: 1px solid var(--color-divider);
 }
-.social-links h2 {
+/* Shared section-heading look: the About page's h2 AND the post-footnote's
+   h3 section heads (S2 follow now; S3 comments when it lands) — one rule,
+   no per-context copies (/simplify 2026-07-17). */
+.social-links h2,
+.post-footnote .fn-section h3 {
 	font-family: var(--font-display);
 	font-size: var(--text-lg);
 	margin: 0 0 var(--space-6);
