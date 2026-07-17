@@ -147,12 +147,15 @@ function ignites_child_footnote_ui( $lang ) {
  * card layout the colored PNG reads fine, unlike the v1.3.1 icon-only row).
  */
 function ignites_child_footnote_socials() {
+	// rel="me" is an identity-verification assertion (Mastodon/IndieAuth) —
+	// correct on these profile cards ONLY; non-profile cards (RSS/Apple) get
+	// plain noopener via their own 'rel' below (/simplify 2026-07-17).
 	return array(
-		array( 'name' => 'Mastodon', 'url' => 'https://kapteinis.lv/@ojars',        'handle' => '@ojars@kapteinis.lv',       'icon' => 'mastodon.svg' ),
-		array( 'name' => 'PixelFed', 'url' => 'https://pixel.kapteinis.lv/ojars',   'handle' => '@ojars@pixel.kapteinis.lv', 'icon' => 'pixelfed.svg' ),
-		array( 'name' => 'BookWyrm', 'url' => 'https://book.kapteinis.lv/user/ojars', 'handle' => '@ojars@book.kapteinis.lv',  'icon' => 'bookwyrm.png' ),
-		array( 'name' => 'Forgejo',  'url' => 'https://git.kapteinis.lv/ojars',     'handle' => '@ojars@git.kapteinis.lv',   'icon' => 'forgejo.svg' ),
-		array( 'name' => 'Bluesky',  'url' => 'https://bsky.app/profile/ojars.kapteinis.lv', 'handle' => 'ojars.kapteinis.lv', 'icon' => 'bluesky.svg' ),
+		array( 'name' => 'Mastodon', 'url' => 'https://kapteinis.lv/@ojars',        'handle' => '@ojars@kapteinis.lv',       'icon' => 'mastodon.svg', 'rel' => 'me noopener' ),
+		array( 'name' => 'PixelFed', 'url' => 'https://pixel.kapteinis.lv/ojars',   'handle' => '@ojars@pixel.kapteinis.lv', 'icon' => 'pixelfed.svg', 'rel' => 'me noopener' ),
+		array( 'name' => 'BookWyrm', 'url' => 'https://book.kapteinis.lv/user/ojars', 'handle' => '@ojars@book.kapteinis.lv',  'icon' => 'bookwyrm.png', 'rel' => 'me noopener' ),
+		array( 'name' => 'Forgejo',  'url' => 'https://git.kapteinis.lv/ojars',     'handle' => '@ojars@git.kapteinis.lv',   'icon' => 'forgejo.svg',  'rel' => 'me noopener' ),
+		array( 'name' => 'Bluesky',  'url' => 'https://bsky.app/profile/ojars.kapteinis.lv', 'handle' => 'ojars.kapteinis.lv', 'icon' => 'bluesky.svg', 'rel' => 'me noopener' ),
 	);
 }
 
@@ -167,16 +170,18 @@ function ignites_child_footnote_socials() {
  * reader-facing label (operator directive 2026-07-17 #2).
  * TODO(operator): a human descriptor sub-line can be added later by setting
  * 'handle' on these two cards.
+ *
+ * Takes the RESOLVED per-category/lang config (the template already holds it
+ * as $ignites_fn) — not $slug/$lang, which would rebuild the whole map a
+ * second time per render (/simplify 2026-07-17).
  */
-function ignites_child_footnote_follow_cards( $slug, $lang ) {
-	$map   = ignites_child_footnote_map();
-	$cat   = $map[ $slug ][ $lang ];
+function ignites_child_footnote_follow_cards( $cat ) {
 	$cards = ignites_child_footnote_socials();
 
-	$cards[] = array( 'name' => 'RSS', 'url' => $cat['feed'], 'handle' => '', 'icon' => 'rss-fill.svg' );
+	$cards[] = array( 'name' => 'RSS', 'url' => $cat['feed'], 'handle' => '', 'icon' => 'rss-fill.svg', 'rel' => 'noopener' );
 
 	if ( ! empty( $cat['apple'] ) ) {
-		$cards[] = array( 'name' => 'Apple Podcasts', 'url' => $cat['apple'], 'handle' => '', 'icon' => 'applepodcasts.svg' );
+		$cards[] = array( 'name' => 'Apple Podcasts', 'url' => $cat['apple'], 'handle' => '', 'icon' => 'applepodcasts.svg', 'rel' => 'noopener' );
 	}
 
 	return $cards;
@@ -198,14 +203,15 @@ function ignites_child_footnote_follow_cards( $slug, $lang ) {
  */
 const IGNITES_FN_TOOT_META = 'ignites_fn_toot_url';
 
-function ignites_child_footnote_comments( $post_id, $lang ) {
+function ignites_child_footnote_comments( $post_id ) {
 	$toot = (string) get_post_meta( $post_id, IGNITES_FN_TOOT_META, true );
 	if ( '' === $toot ) {
 		return; // No linked toot — render nothing (currently: every post).
 	}
 	// Reserved: future build renders here as
-	// <section class="fn-section fn-comments"><h2>…</h2>…</section>
-	// using the same heading/spacing/card family as sections 1–2.
+	// <section class="fn-section fn-comments"><h3>…</h3>…</section>
+	// using the same heading/spacing/card family as sections 1–2; resolve
+	// the request language via ignites_child_footnote_lang() when copy lands.
 }
 
 /**

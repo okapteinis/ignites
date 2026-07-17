@@ -32,16 +32,13 @@
 	margin: 1.75rem 0 0;
 }
 
-/* Sections — uniform rhythm; headings match .social-links h2 (style.css)
-   so S1/S2/S3 read as siblings. */
+/* Sections — uniform rhythm. Section headings are <h3> under the <h2> hook
+   (real document outline, not a font-size illusion); their look comes from
+   the ONE shared rule in style.css (`.social-links h2, .post-footnote
+   .fn-section h3`) — no duplicate declaration block here (/simplify
+   2026-07-17). */
 .post-footnote .fn-section {
 	margin: 1.5rem 0 0;
-}
-
-.post-footnote .fn-section h2 {
-	font-family: var(--font-display);
-	font-size: var(--text-lg);
-	margin: 0 0 var(--space-6);
 }
 
 /* --------------------------------------------------------------------------
