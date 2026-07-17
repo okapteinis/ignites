@@ -709,8 +709,16 @@ function ignites_child_render_lang_switch() {
 	// rel="noreferrer": navigating to the slug-free default-language root "/" otherwise
 	// leaks a cross-language Referer that qTranslate's Slugs module uses to keep the
 	// prior language (infra-docs#257) — suppressing it lets "/" resolve to default LV.
+	// Wrapped in a <nav> landmark so the control isn't loose page content
+	// (WCAG 1.3.1 "region" / axe — the switcher renders via wp_footer, outside
+	// the parent's header/main/footer). The <a> keeps its own fixed positioning
+	// ([data-lang-switch] in style.css), so the zero-box <nav> adds no layout.
+	$nav_label = ( 'en' === $current )
+		? __( 'Valodas izvēle', 'ignites-child' )  // page is LV → label in LV
+		: __( 'Language', 'ignites-child' );        // page is EN → label in EN
 	printf(
-		'<a data-lang-switch href="%s" hreflang="%s" rel="noreferrer" aria-label="%s"><span aria-hidden="true">%s</span></a>',
+		'<nav class="lang-switch-nav" aria-label="%s"><a data-lang-switch href="%s" hreflang="%s" rel="noreferrer" aria-label="%s"><span aria-hidden="true">%s</span></a></nav>',
+		esc_attr( $nav_label ),
 		esc_url( $target ),
 		esc_attr( $other ),
 		esc_attr( $label ),
@@ -734,9 +742,15 @@ add_action( 'wp_footer', 'ignites_child_render_lang_switch', 1 );
  */
 function ignites_child_favicon() {
 	$base = get_stylesheet_directory_uri() . '/assets/images';
+	// /favicon.ico at the SITE ROOT — browsers request it unconditionally, and it
+	// was a 404 (ignites#49 F8). A physical multi-size .ico (16/32/48) is deployed
+	// to the webroot; sizes="any" so it serves the legacy .ico slot.
+	echo '<link rel="icon" href="/favicon.ico" sizes="any">' . "\n";
 	echo '<link rel="icon" type="image/png" sizes="32x32" href="' . esc_url( $base . '/favicon-32.png' ) . '">' . "\n";
 	echo '<link rel="icon" type="image/png" sizes="192x192" href="' . esc_url( $base . '/icon-192.png' ) . '">' . "\n";
 	echo '<link rel="apple-touch-icon" sizes="180x180" href="' . esc_url( $base . '/apple-touch-icon.png' ) . '">' . "\n";
+	// Web app manifest (F8) — icons (192 any + 512 any/maskable) + theme/bg colour.
+	echo '<link rel="manifest" href="' . esc_url( get_stylesheet_directory_uri() . '/manifest.webmanifest' ) . '">' . "\n";
 }
 add_action( 'wp_head', 'ignites_child_favicon', 5 );
 
