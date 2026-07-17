@@ -51,7 +51,6 @@ function ignites_child_footnote_map() {
 					'Padoms: maksas rakstu bieži var izlasīt, tā saiti sameklējot vietnē <a href="https://archive.today" target="_blank" rel="noopener">archive.today</a>; rakstu citā valodā var iztulkot ar <a href="https://hugo.lv/lv/Translate/Website" target="_blank" rel="noopener">hugo.lv</a>.',
 				),
 				'feed'        => 'https://ojars.kapteinis.lv/tema/saites/feed/',
-				'feed_handle' => 'tema/saites',
 				'sub_ask'     => 'Pieraksties, lai saņemtu manu ikdienas apkopojumu ar visu, ko izlasu. Neko vairāk.',
 				'list_uuid'   => 'b79d6df1-305c-434f-a061-6de43732c0bd',
 			),
@@ -61,7 +60,6 @@ function ignites_child_footnote_map() {
 					'Tip: a paywalled article can often be read by searching for its URL on <a href="https://archive.today" target="_blank" rel="noopener">archive.today</a>; an article in another language can be translated with <a href="https://hugo.lv/en/Translate/Website" target="_blank" rel="noopener">hugo.lv</a>.',
 				),
 				'feed'        => 'https://ojars.kapteinis.lv/en/category/links/feed/',
-				'feed_handle' => 'category/links',
 				'sub_ask'     => 'Subscribe to my daily roundup of everything I read. Nothing else.',
 				'list_uuid'   => '6a611820-5a3b-4866-a8c4-8c82146d42da',
 			),
@@ -70,14 +68,12 @@ function ignites_child_footnote_map() {
 			'lv' => array(
 				'context'     => array(),
 				'feed'        => 'https://ojars.kapteinis.lv/tema/teksti/feed/',
-				'feed_handle' => 'tema/teksti',
 				'sub_ask'     => 'Pieraksties, lai saņemtu manus rakstus. Neko vairāk.',
 				'list_uuid'   => '336641a6-8220-4307-8a90-44987e905675',
 			),
 			'en' => array(
 				'context'     => array(),
 				'feed'        => 'https://ojars.kapteinis.lv/en/category/blog/feed/',
-				'feed_handle' => 'category/blog',
 				'sub_ask'     => 'Subscribe to my blog posts. Nothing else.',
 				'list_uuid'   => '23e2075b-4e90-480d-a892-e39cb1055c68',
 			),
@@ -86,7 +82,6 @@ function ignites_child_footnote_map() {
 			'lv' => array(
 				'context'     => array(),
 				'feed'        => 'https://ojars.kapteinis.lv/tema/podkasts/feed/',
-				'feed_handle' => 'tema/podkasts',
 				'apple'       => 'https://itunes.apple.com/lv/podcast/podkasts-ojars-kapteinis/id1204929568',
 				'sub_ask'     => 'Pieraksties, lai saņemtu manas jaunākās epizodes. Neko vairāk.',
 				'list_uuid'   => '31a0127d-84c1-4da7-a3e3-90e699e78faa',
@@ -94,7 +89,6 @@ function ignites_child_footnote_map() {
 			'en' => array(
 				'context'     => array(),
 				'feed'        => 'https://ojars.kapteinis.lv/en/category/podcast/feed/',
-				'feed_handle' => 'category/podcast',
 				'apple'       => 'https://itunes.apple.com/lv/podcast/podkasts-ojars-kapteinis/id1204929568',
 				'sub_ask'     => 'Subscribe to my newest podcast episodes. Nothing else.',
 				'list_uuid'   => 'f230e0a0-0964-4cf7-b019-18b246a84984',
@@ -168,18 +162,21 @@ function ignites_child_footnote_socials() {
  * Podcasts card on podcast posts only. The RSS card RETIRES the v1.3.x
  * standalone prose RSS line — a destination appears as a button OR prose,
  * never both (operator directive 2026-07-17).
- * TODO(operator): confirm the LV-visible RSS/Apple card handle strings
- * ('feed_handle' paths + the show name) before they're considered settled.
+ * RSS/Apple ship NAME-ONLY (handle => '' → the template skips the sub-line):
+ * they have no @handle identity like the profiles, and a URL path is not a
+ * reader-facing label (operator directive 2026-07-17 #2).
+ * TODO(operator): a human descriptor sub-line can be added later by setting
+ * 'handle' on these two cards.
  */
 function ignites_child_footnote_follow_cards( $slug, $lang ) {
 	$map   = ignites_child_footnote_map();
 	$cat   = $map[ $slug ][ $lang ];
 	$cards = ignites_child_footnote_socials();
 
-	$cards[] = array( 'name' => 'RSS', 'url' => $cat['feed'], 'handle' => $cat['feed_handle'], 'icon' => 'rss-fill.svg' );
+	$cards[] = array( 'name' => 'RSS', 'url' => $cat['feed'], 'handle' => '', 'icon' => 'rss-fill.svg' );
 
 	if ( ! empty( $cat['apple'] ) ) {
-		$cards[] = array( 'name' => 'Apple Podcasts', 'url' => $cat['apple'], 'handle' => 'Ojārs Kapteinis', 'icon' => 'applepodcasts.svg' );
+		$cards[] = array( 'name' => 'Apple Podcasts', 'url' => $cat['apple'], 'handle' => '', 'icon' => 'applepodcasts.svg' );
 	}
 
 	return $cards;

@@ -85,7 +85,9 @@ $ignites_fn_kses = array(
 						<span class="social-icon" aria-hidden="true"><?php ignites_child_footnote_icon( $ignites_fn_s['icon'] ); ?></span>
 						<span class="social-label">
 							<span class="social-name"><?php echo esc_html( $ignites_fn_s['name'] ); ?></span>
-							<span class="social-handle"><?php echo esc_html( $ignites_fn_s['handle'] ); ?></span>
+							<?php if ( '' !== $ignites_fn_s['handle'] ) : ?>
+								<span class="social-handle"><?php echo esc_html( $ignites_fn_s['handle'] ); ?></span>
+							<?php endif; ?>
 						</span>
 					</a>
 				</li>
