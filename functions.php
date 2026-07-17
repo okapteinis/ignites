@@ -956,6 +956,51 @@ function ignites_child_jsonld() {
 add_action( 'wp_head', 'ignites_child_jsonld', 7 );
 
 /**
+ * CSP violation-report collector (ignites#49 Batch D / F5). The nginx snippet
+ * `nginx-ojars-security-headers.conf` serves a Content-Security-Policy-Report-Only
+ * header (non-enforcing) whose report-uri/report-to points here. This is the
+ * OBSERVE half: it captures violations so the report-only policy can be tuned and
+ * then promoted to enforcing once the log is clean. Endpoint is intentionally
+ * public (browsers POST reports unauthenticated) but hardened: POST-only,
+ * content-type-gated to the two report MIME types, body capped, and the log line
+ * is a single compact record written via error_log() (NOT a web-served path —
+ * reports are never downloadable). The wordpress FPM pool has no explicit
+ * error_log, so type-0 error_log() surfaces via FastCGI stderr in the nginx vhost
+ * error log — OBSERVE with:
+ *   sudo grep CSP-REPORT /var/log/nginx/ojars.kapteinis.lv-error.log
+ * CSP reports carry only the violated URI + directive, no user data. Remove this
+ * route + the report-only header once the policy is promoted to enforcing.
+ */
+add_action( 'rest_api_init', function () {
+	register_rest_route(
+		'ignites/v1',
+		'/csp-report',
+		array(
+			'methods'             => 'POST',
+			'permission_callback' => '__return_true',
+			'callback'            => 'ignites_child_csp_report',
+		)
+	);
+} );
+
+function ignites_child_csp_report( $request ) {
+	$ct = strtolower( (string) $request->get_header( 'content_type' ) );
+	// Browsers send application/csp-report (report-uri) or application/reports+json (report-to).
+	if ( false === strpos( $ct, 'csp-report' ) && false === strpos( $ct, 'reports+json' ) ) {
+		return new WP_REST_Response( null, 415 );
+	}
+	$body = $request->get_body();
+	if ( is_string( $body ) && '' !== $body ) {
+		$body = substr( $body, 0, 4096 ); // cap — reports are small; defend against a flood
+		$line = str_replace( array( "\n", "\r" ), ' ', $body ); // keep it one grep-able line
+		// type 0 → PHP-FPM error log (not web-accessible). Grep: `grep CSP-REPORT`.
+		error_log( 'CSP-REPORT ' . $line );
+	}
+	// 204: acknowledge without a body; browsers ignore the response anyway.
+	return new WP_REST_Response( null, 204 );
+}
+
+/**
  * Cloudflare Web Analytics beacon — privacy-first, COOKIELESS reader counter.
  * Sets no cookies / no localStorage / no cross-site identifier, so it needs no
  * cookie-consent banner. Injected MANUALLY (deferred, in wp_footer) because
