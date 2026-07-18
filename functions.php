@@ -777,6 +777,230 @@ function ignites_child_meta_description() {
 add_action( 'wp_head', 'ignites_child_meta_description', 3 );
 
 /**
+ * Active request language as a 2-letter code ('lv'|'en'), qTranslate-XT aware,
+ * defaulting to 'lv' (the site default) when qTranslate is inactive.
+ */
+function ignites_child_lang() {
+	if ( function_exists( 'qtranxf_getLanguage' ) ) {
+		$l = qtranxf_getLanguage();
+		if ( 'en' === $l ) {
+			return 'en';
+		}
+	}
+	return 'lv';
+}
+
+/**
+ * Canonical URL for the current view (ignites#49 F6). ClassicPress/qTranslate
+ * emit rel=canonical on single posts/pages already, but NOT on the front page —
+ * so this fills that gap (front page only), keeping the LV canonical at "/" and
+ * the EN canonical at "/en/". Other views keep the core/qTranslate canonical.
+ */
+function ignites_child_canonical() {
+	if ( ! is_front_page() && ! is_home() ) {
+		return;
+	}
+	$url = ( 'en' === ignites_child_lang() ) ? home_url( '/en/' ) : home_url( '/' );
+	echo '<link rel="canonical" href="' . esc_url( $url ) . '">' . "\n";
+}
+add_action( 'wp_head', 'ignites_child_canonical', 3 );
+
+/**
+ * color-scheme + theme-color (ignites#49 F9). The theme ships light + dark
+ * surfaces (@media prefers-color-scheme in style.css); advertise both so the
+ * browser chrome / address bar matches the rendered palette. Colours mirror
+ * --color-bg in style.css (light #f7f5f1 / dark #171614).
+ */
+function ignites_child_color_scheme_meta() {
+	echo '<meta name="color-scheme" content="light dark">' . "\n";
+	echo '<meta name="theme-color" media="(prefers-color-scheme: light)" content="#f7f5f1">' . "\n";
+	echo '<meta name="theme-color" media="(prefers-color-scheme: dark)" content="#171614">' . "\n";
+}
+add_action( 'wp_head', 'ignites_child_color_scheme_meta', 4 );
+
+/**
+ * Open Graph + Twitter Card tags, LOCALISED per request language (ignites#49
+ * F10, closes ignites#28 — the site previously emitted zero OG/twitter tags, so
+ * every fediverse/Slack/iMessage/Twitter share degraded to a title-only or bare
+ * card). Front page → og:type=website with the bilingual site description;
+ * single post → og:type=article with the post title + excerpt + feature image
+ * (falling back to the shared 1200×630 og-card). og:locale is lv_LV / en_US.
+ * The fediverse:creator byline (emitted separately) composes with these.
+ */
+function ignites_child_opengraph() {
+	if ( is_admin() || is_feed() ) {
+		return;
+	}
+	$lang    = ignites_child_lang();
+	$locale  = ( 'en' === $lang ) ? 'en_US' : 'lv_LV';
+	$site    = 'Ojārs Kapteinis';
+	$img_dir = get_stylesheet_directory_uri() . '/assets/images';
+	$og_card = $img_dir . '/og-card.jpg';
+
+	if ( is_singular( 'post' ) ) {
+		$type  = 'article';
+		$id    = get_the_ID();
+		$title = wp_strip_all_tags( get_the_title( $id ) );
+		$url   = ( 'en' === $lang ) ? ignites_child_canonical_en_url( $id ) : get_permalink( $id );
+		if ( ! $url ) {
+			$url = get_permalink( $id );
+		}
+		$excerpt = wp_strip_all_tags( get_the_excerpt( $id ) );
+		$desc    = ( '' !== $excerpt ) ? $excerpt : $title;
+		$thumb   = get_the_post_thumbnail_url( $id, 'large' );
+		$image   = $thumb ? $thumb : $og_card;
+		$img_w   = $thumb ? '' : '1200';
+		$img_h   = $thumb ? '' : '630';
+	} else {
+		$type  = 'website';
+		$title = $site;
+		$url   = ( 'en' === $lang ) ? home_url( '/en/' ) : home_url( '/' );
+		$bi    = '[:lv]Ojāra Kapteiņa blogs par self-hosting, decentralizēto tīmekli un mākslīgo intelektu, politiku un reliģiju, kā arī ikdienas saišu apkopojumi.[:en]Ojārs Kapteinis\'s blog about self-hosting, the decentralized web and AI, politics and religion, plus daily link digests.[:]';
+		$desc  = ( function_exists( 'qtranxf_use' ) ) ? qtranxf_use( $lang, $bi, false ) : $bi;
+		$image = $og_card;
+		$img_w = '1200';
+		$img_h = '630';
+	}
+
+	$tags = array(
+		'og:type'        => $type,
+		'og:site_name'   => $site,
+		'og:locale'      => $locale,
+		'og:title'       => $title,
+		'og:description' => $desc,
+		'og:url'         => $url,
+		'og:image'       => $image,
+	);
+	foreach ( $tags as $prop => $val ) {
+		if ( '' === (string) $val ) {
+			continue;
+		}
+		echo '<meta property="' . esc_attr( $prop ) . '" content="' . esc_attr( $val ) . '">' . "\n";
+	}
+	if ( '' !== $img_w ) {
+		echo '<meta property="og:image:width" content="' . esc_attr( $img_w ) . '">' . "\n";
+		echo '<meta property="og:image:height" content="' . esc_attr( $img_h ) . '">' . "\n";
+	}
+	// Twitter Card (mirrors OG; summary_large_image for the 1.91:1 card).
+	echo '<meta name="twitter:card" content="summary_large_image">' . "\n";
+	echo '<meta name="twitter:title" content="' . esc_attr( $title ) . '">' . "\n";
+	echo '<meta name="twitter:description" content="' . esc_attr( $desc ) . '">' . "\n";
+	echo '<meta name="twitter:image" content="' . esc_url( $image ) . '">' . "\n";
+}
+add_action( 'wp_head', 'ignites_child_opengraph', 6 );
+
+/**
+ * JSON-LD structured data (ignites#49 F7). Front page → WebSite + Person (with
+ * sameAs federated/social profiles); single post → BlogPosting. No SEO plugin is
+ * installed, so this is the site's only schema.org output. inLanguage tracks the
+ * active qTranslate language.
+ */
+function ignites_child_jsonld() {
+	if ( is_admin() || is_feed() ) {
+		return;
+	}
+	$lang    = ignites_child_lang();
+	$bcp     = ( 'en' === $lang ) ? 'en-US' : 'lv-LV';
+	$site    = 'Ojārs Kapteinis';
+	$home    = home_url( '/' );
+	$img_dir = get_stylesheet_directory_uri() . '/assets/images';
+	$person  = array(
+		'@type'  => 'Person',
+		'name'   => $site,
+		'url'    => $home,
+		'sameAs' => array(
+			'https://kapteinis.lv/@ojars',
+			'https://pixel.kapteinis.lv/ojars',
+			'https://book.kapteinis.lv/user/ojars',
+			'https://git.kapteinis.lv/ojars',
+		),
+	);
+
+	if ( is_singular( 'post' ) ) {
+		$id    = get_the_ID();
+		$url   = ( 'en' === $lang ) ? ignites_child_canonical_en_url( $id ) : get_permalink( $id );
+		if ( ! $url ) {
+			$url = get_permalink( $id );
+		}
+		$thumb = get_the_post_thumbnail_url( $id, 'large' );
+		$data  = array(
+			'@context'         => 'https://schema.org',
+			'@type'            => 'BlogPosting',
+			'headline'         => wp_strip_all_tags( get_the_title( $id ) ),
+			'mainEntityOfPage' => $url,
+			'url'              => $url,
+			'datePublished'    => get_the_date( DATE_W3C, $id ),
+			'dateModified'     => get_the_modified_date( DATE_W3C, $id ),
+			'inLanguage'       => $bcp,
+			'author'           => $person,
+			'publisher'        => $person,
+		);
+		if ( $thumb ) {
+			$data['image'] = $thumb;
+		} else {
+			$data['image'] = $img_dir . '/og-card.jpg';
+		}
+	} else {
+		$data = array(
+			'@context'    => 'https://schema.org',
+			'@type'       => 'WebSite',
+			'name'        => $site,
+			'url'         => ( 'en' === $lang ) ? home_url( '/en/' ) : $home,
+			'inLanguage'  => $bcp,
+			'author'      => $person,
+			'publisher'   => $person,
+		);
+	}
+	echo '<script type="application/ld+json">' . wp_json_encode( $data, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE ) . '</script>' . "\n";
+}
+add_action( 'wp_head', 'ignites_child_jsonld', 7 );
+
+/**
+ * CSP violation-report collector (ignites#49 Batch D / F5). The nginx snippet
+ * `nginx-ojars-security-headers.conf` serves a Content-Security-Policy-Report-Only
+ * header (non-enforcing) whose report-uri/report-to points here. This is the
+ * OBSERVE half: it captures violations so the report-only policy can be tuned and
+ * then promoted to enforcing once the log is clean. Endpoint is intentionally
+ * public (browsers POST reports unauthenticated) but hardened: POST-only,
+ * content-type-gated to the two report MIME types, body capped, and the log line
+ * is a single compact record written via error_log() (NOT a web-served path —
+ * reports are never downloadable). The wordpress FPM pool has no explicit
+ * error_log, so type-0 error_log() surfaces via FastCGI stderr in the nginx vhost
+ * error log — OBSERVE with:
+ *   sudo grep CSP-REPORT /var/log/nginx/ojars.kapteinis.lv-error.log
+ * CSP reports carry only the violated URI + directive, no user data. Remove this
+ * route + the report-only header once the policy is promoted to enforcing.
+ */
+add_action( 'rest_api_init', function () {
+	register_rest_route(
+		'ignites/v1',
+		'/csp-report',
+		array(
+			'methods'             => 'POST',
+			'permission_callback' => '__return_true',
+			'callback'            => 'ignites_child_csp_report',
+		)
+	);
+} );
+
+function ignites_child_csp_report( $request ) {
+	$ct = strtolower( (string) $request->get_header( 'content_type' ) );
+	// Browsers send application/csp-report (report-uri) or application/reports+json (report-to).
+	if ( false === strpos( $ct, 'csp-report' ) && false === strpos( $ct, 'reports+json' ) ) {
+		return new WP_REST_Response( null, 415 );
+	}
+	$body = $request->get_body();
+	if ( is_string( $body ) && '' !== $body ) {
+		$body = substr( $body, 0, 4096 ); // cap — reports are small; defend against a flood
+		$line = str_replace( array( "\n", "\r" ), ' ', $body ); // keep it one grep-able line
+		// type 0 → PHP-FPM error log (not web-accessible). Grep: `grep CSP-REPORT`.
+		error_log( 'CSP-REPORT ' . $line );
+	}
+	// 204: acknowledge without a body; browsers ignore the response anyway.
+	return new WP_REST_Response( null, 204 );
+}
+
+/**
  * Cloudflare Web Analytics beacon — privacy-first, COOKIELESS reader counter.
  * Sets no cookies / no localStorage / no cross-site identifier, so it needs no
  * cookie-consent banner. Injected MANUALLY (deferred, in wp_footer) because
