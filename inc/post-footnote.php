@@ -68,13 +68,17 @@ function ignites_child_footnote_map() {
 		),
 		'teksti' => array(
 			'lv' => array(
-				'context'     => array(),
+				'context'     => array(
+					'Šī satura sagatavošanā izmantoju mākslīgo intelektu kā izpētes, faktu pārbaudes un rediģēšanas palīgrīku. Katru ierakstu pirms publicēšanas pārskatu, un par saturu redakcionāli atbildu es. <a href="https://digital-strategy.ec.europa.eu/en/policies/eu-icons-labelling-ai-generated-content" target="_blank" rel="noopener">Vairāk par ES prasībām mākslīgā intelekta satura marķēšanai</a>.',
+				),
 				'feed'        => 'https://ojars.kapteinis.lv/tema/teksti/feed/',
 				'sub_ask'     => 'Pieraksties, lai saņemtu manus rakstus. Neko vairāk.',
 				'list_uuid'   => '336641a6-8220-4307-8a90-44987e905675',
 			),
 			'en' => array(
-				'context'     => array(),
+				'context'     => array(
+					'I use artificial intelligence as a research, fact-checking and editing assistant when preparing this content. I review every item before publication and remain editorially responsible for the content. <a href="https://digital-strategy.ec.europa.eu/en/policies/eu-icons-labelling-ai-generated-content" target="_blank" rel="noopener">More about the EU requirements for labelling AI-generated content</a>.',
+				),
 				'feed'        => 'https://ojars.kapteinis.lv/en/category/blog/feed/',
 				'sub_ask'     => 'Subscribe to my blog posts. Nothing else.',
 				'list_uuid'   => '23e2075b-4e90-480d-a892-e39cb1055c68',
@@ -82,14 +86,18 @@ function ignites_child_footnote_map() {
 		),
 		'podkasts' => array(
 			'lv' => array(
-				'context'     => array(),
+				'context'     => array(
+					'Šīs epizodes sagatavošanā izmantoju mākslīgo intelektu kā izpētes, faktu pārbaudes un rediģēšanas palīgrīku. Katru epizodi pirms publicēšanas pārskatu, un par tās saturu redakcionāli atbildu es. <a href="https://digital-strategy.ec.europa.eu/en/policies/eu-icons-labelling-ai-generated-content" target="_blank" rel="noopener">Vairāk par ES prasībām mākslīgā intelekta satura marķēšanai</a>.',
+				),
 				'feed'        => 'https://ojars.kapteinis.lv/tema/podkasts/feed/',
 				'apple'       => 'https://itunes.apple.com/lv/podcast/podkasts-ojars-kapteinis/id1204929568',
 				'sub_ask'     => 'Pieraksties, lai saņemtu manas jaunākās epizodes. Neko vairāk.',
 				'list_uuid'   => '31a0127d-84c1-4da7-a3e3-90e699e78faa',
 			),
 			'en' => array(
-				'context'     => array(),
+				'context'     => array(
+					'I use artificial intelligence as a research, fact-checking and editing assistant when preparing this episode. I review each episode before publication and remain editorially responsible for its content. <a href="https://digital-strategy.ec.europa.eu/en/policies/eu-icons-labelling-ai-generated-content" target="_blank" rel="noopener">More about the EU requirements for labelling AI-generated content</a>.',
+				),
 				'feed'        => 'https://ojars.kapteinis.lv/en/category/podcast/feed/',
 				'apple'       => 'https://itunes.apple.com/lv/podcast/podkasts-ojars-kapteinis/id1204929568',
 				'sub_ask'     => 'Subscribe to my newest podcast episodes. Nothing else.',
