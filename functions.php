@@ -13,6 +13,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 // saites homepage exclusion — v1.3.0. Kept in its own file so this one's
 // weekly-restorer marker block below stays untouched by footnote work.
 require_once get_stylesheet_directory() . '/inc/post-footnote.php';
+require_once get_stylesheet_directory() . '/inc/sidenotes.php';
 
 /**
  * Load child theme translations (closes ojars/ignites#4). The theme uses
@@ -581,6 +582,7 @@ add_filter( 'gettext', function ( $translation, $text, $domain ) {
 			'Mainīt tēmu'                                                                      => 'Change theme',
 			'Pārslēgt uz tumšo tēmu'                                                           => 'Switch to dark theme',
 			'Pārslēgt uz gaišo tēmu'                                                           => 'Switch to light theme',
+			'Piezīme %d'                                                                       => 'Note %d',
 			'%d min lasīšana'                                                                  => '%d min read',
 			'Meklēt'                                                                           => 'Search',
 			'Meklēt…'                                                                          => 'Search…',
