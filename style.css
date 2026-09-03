@@ -670,6 +670,11 @@ h2.entry-title a:hover {
    3.6a Citation sidenotes — Tufte-inspired, no JavaScript.
    -------------------------------------------------------------------------- */
 .sidenote-number {
+  display: inline-block;
+  min-width: 24px;
+  min-height: 24px;
+  text-align: center;
+  vertical-align: middle;
   cursor: pointer;
 }
 .sidenote-number::after {
