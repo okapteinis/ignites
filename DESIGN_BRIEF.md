@@ -103,7 +103,7 @@ Define all tokens in `:root` inside `style.css`. Both light and dark mode requir
 
   --transition: 180ms cubic-bezier(0.16, 1, 0.3, 1);
 
-  --content-narrow:  640px;
+  --content-narrow:  680px;
   --content-default: 900px;
   --content-wide:   1140px;
 }
@@ -161,7 +161,7 @@ add_action('wp_enqueue_scripts', 'ignites_child_enqueue', 20);
 
 Additionally in `functions.php`:
 
-- **Reading time function:** `ignites_child_reading_time()` — counts post words, returns string like "5 min lasīšana" (Latvian). Use `str_word_count(strip_tags(get_the_content()))` divided by 200.
+- **Reading time function:** `ignites_child_reading_time()` — counts post words, returns string like "5 min lasīšanas" (Latvian). Use `str_word_count(strip_tags(get_the_content()))` divided by 200.
 - **Dark mode toggle:** inject a `<button data-theme-toggle aria-label="Mainīt tēmu">` into the header via `wp_body_open` action (or hook into `wp_footer` and move it via JS). Include the toggle JS inline via `wp_add_inline_script`.
 
 ---
@@ -682,7 +682,7 @@ Inject via `wp_footer` or `wp_add_inline_script`:
 - [ ] Single post has: reading progress bar, constrained 68ch column, large display title, styled blockquotes & code
 - [ ] Tag links render as pills
 - [ ] Dark mode toggle button: fixed bottom-right, sun/moon icon, defaults to system preference
-- [ ] Reading time appears in post meta in Latvian: "X min lasīšana"
+- [ ] Reading time appears in post meta in Latvian: "X min lasīšanas"
 - [ ] Mobile (375px): single column, no overflow, touch targets ≥44px
 - [ ] No pure `#000000` or `#ffffff` anywhere — use token values
 - [ ] Zip produced as `ignites-child.zip`, uploadable directly to ClassicPress

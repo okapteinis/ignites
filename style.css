@@ -103,7 +103,7 @@ Text Domain:  ignites-child
 
   --transition: 180ms cubic-bezier(0.16, 1, 0.3, 1);
 
-  --content-narrow:  640px;
+  --content-narrow:  680px;
   --content-default: 900px;
   --content-wide:    1140px;
 }
@@ -1238,6 +1238,8 @@ ul.primary-menu li:hover > a {
 	display: flex;
 	align-items: center;
 	gap: var(--space-4);
+	min-height: 88px;
+	box-sizing: border-box;
 	padding: var(--space-4) var(--space-4);
 	background: var(--color-surface);
 	border: 1px solid var(--color-border);
