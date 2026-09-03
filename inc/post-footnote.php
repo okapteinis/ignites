@@ -49,7 +49,7 @@ function ignites_child_footnote_map() {
 				'context'     => array(
 					'Šis ir ikdienas saišu apkopojums — saites uz rakstiem, kurus izlasīju iepriekšējā dienā.',
 					'Padoms: maksas rakstu bieži var izlasīt, tā saiti sameklējot vietnē <a href="https://archive.today" target="_blank" rel="noopener">archive.today</a>; rakstu citā valodā var iztulkot ar <a href="https://hugo.lv/lv/Translate/Website" target="_blank" rel="noopener">hugo.lv</a>.',
-					'Šī apkopojuma sagatavošanā izmantoju mākslīgo intelektu kā izpētes, faktu pārbaudes un rediģēšanas palīgrīku.',
+					'Izmantoju mākslīgo intelektu kā izpētes, faktu pārbaudes un rediģēšanas palīgrīku.',
 				),
 				'feed'        => 'https://ojars.kapteinis.lv/tema/saites/feed/',
 				'sub_ask'     => 'Pieraksties, lai saņemtu manu ikdienas apkopojumu ar visu, ko izlasu. Neko vairāk.',
@@ -59,7 +59,7 @@ function ignites_child_footnote_map() {
 				'context'     => array(
 					'This is a daily link digest — links to the articles I read the previous day.',
 					'Tip: a paywalled article can often be read by searching for its URL on <a href="https://archive.today" target="_blank" rel="noopener">archive.today</a>; an article in another language can be translated with <a href="https://hugo.lv/en/Translate/Website" target="_blank" rel="noopener">hugo.lv</a>.',
-					'I use artificial intelligence as a research, fact-checking and editing assistant when preparing this digest.',
+					'I use artificial intelligence as a research, fact-checking and editing assistant.',
 				),
 				'feed'        => 'https://ojars.kapteinis.lv/en/category/links/feed/',
 				'sub_ask'     => 'Subscribe to my daily roundup of everything I read. Nothing else.',
@@ -69,7 +69,7 @@ function ignites_child_footnote_map() {
 		'teksti' => array(
 			'lv' => array(
 				'context'     => array(
-					'Šī satura sagatavošanā izmantoju mākslīgo intelektu kā izpētes, faktu pārbaudes un rediģēšanas palīgrīku.',
+					'Izmantoju mākslīgo intelektu kā izpētes, faktu pārbaudes un rediģēšanas palīgrīku.',
 				),
 				'feed'        => 'https://ojars.kapteinis.lv/tema/teksti/feed/',
 				'sub_ask'     => 'Pieraksties, lai saņemtu manus rakstus. Neko vairāk.',
@@ -77,7 +77,7 @@ function ignites_child_footnote_map() {
 			),
 			'en' => array(
 				'context'     => array(
-					'I use artificial intelligence as a research, fact-checking and editing assistant when preparing this content.',
+					'I use artificial intelligence as a research, fact-checking and editing assistant.',
 				),
 				'feed'        => 'https://ojars.kapteinis.lv/en/category/blog/feed/',
 				'sub_ask'     => 'Subscribe to my blog posts. Nothing else.',
@@ -87,7 +87,7 @@ function ignites_child_footnote_map() {
 		'podkasts' => array(
 			'lv' => array(
 				'context'     => array(
-					'Šīs epizodes sagatavošanā izmantoju mākslīgo intelektu kā izpētes, faktu pārbaudes un rediģēšanas palīgrīku.',
+					'Izmantoju mākslīgo intelektu kā izpētes, faktu pārbaudes un rediģēšanas palīgrīku.',
 				),
 				'feed'        => 'https://ojars.kapteinis.lv/tema/podkasts/feed/',
 				'apple'       => 'https://itunes.apple.com/lv/podcast/podkasts-ojars-kapteinis/id1204929568',
@@ -96,7 +96,7 @@ function ignites_child_footnote_map() {
 			),
 			'en' => array(
 				'context'     => array(
-					'I use artificial intelligence as a research, fact-checking and editing assistant when preparing this episode.',
+					'I use artificial intelligence as a research, fact-checking and editing assistant.',
 				),
 				'feed'        => 'https://ojars.kapteinis.lv/en/category/podcast/feed/',
 				'apple'       => 'https://itunes.apple.com/lv/podcast/podkasts-ojars-kapteinis/id1204929568',
