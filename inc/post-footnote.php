@@ -49,6 +49,7 @@ function ignites_child_footnote_map() {
 				'context'     => array(
 					'Šis ir ikdienas saišu apkopojums — saites uz rakstiem, kurus izlasīju iepriekšējā dienā.',
 					'Padoms: maksas rakstu bieži var izlasīt, tā saiti sameklējot vietnē <a href="https://archive.today" target="_blank" rel="noopener">archive.today</a>; rakstu citā valodā var iztulkot ar <a href="https://hugo.lv/lv/Translate/Website" target="_blank" rel="noopener">hugo.lv</a>.',
+					'Šī apkopojuma sagatavošanā izmantoju mākslīgo intelektu kā izpētes, faktu pārbaudes un rediģēšanas palīgrīku. Katru ierakstu pirms publicēšanas pārskatu, un par saturu redakcionāli atbildu es. <a href="https://digital-strategy.ec.europa.eu/en/policies/eu-icons-labelling-ai-generated-content" target="_blank" rel="noopener">Vairāk par ES prasībām mākslīgā intelekta satura marķēšanai</a>.',
 				),
 				'feed'        => 'https://ojars.kapteinis.lv/tema/saites/feed/',
 				'sub_ask'     => 'Pieraksties, lai saņemtu manu ikdienas apkopojumu ar visu, ko izlasu. Neko vairāk.',
@@ -58,6 +59,7 @@ function ignites_child_footnote_map() {
 				'context'     => array(
 					'This is a daily link digest — links to the articles I read the previous day.',
 					'Tip: a paywalled article can often be read by searching for its URL on <a href="https://archive.today" target="_blank" rel="noopener">archive.today</a>; an article in another language can be translated with <a href="https://hugo.lv/en/Translate/Website" target="_blank" rel="noopener">hugo.lv</a>.',
+					'I use artificial intelligence as a research, fact-checking and editing assistant when preparing this digest. I review every item before publication and remain editorially responsible for the content. <a href="https://digital-strategy.ec.europa.eu/en/policies/eu-icons-labelling-ai-generated-content" target="_blank" rel="noopener">More about the EU requirements for labelling AI-generated content</a>.',
 				),
 				'feed'        => 'https://ojars.kapteinis.lv/en/category/links/feed/',
 				'sub_ask'     => 'Subscribe to my daily roundup of everything I read. Nothing else.',
