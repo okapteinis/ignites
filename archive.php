@@ -20,6 +20,7 @@ get_header();
 				<div id="primary" class="content-area">
 					<main id="main" class="site-main">
 						<?php if ( have_posts() ) : ?>
+
 							<?php
 							$ignites_child_post_count = 0;
 							while ( have_posts() ) :
