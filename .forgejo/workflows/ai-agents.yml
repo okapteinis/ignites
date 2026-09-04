@@ -1,13 +1,13 @@
 name: Ignites AI Review
 
-# Reviews ojars/ignites PRs via the Teika /review/pr pipeline (ADR-003,
-# single-council). Mirrors teika + SurfSense + infra-scripts ai-agents.yml.
+# Reviews ojars/ignites PRs via the Teika async review pipeline (ADR-003,
+# single-council). Mirrors teika + SurfSense + infra-scripts.
 # infra-docs#216 Tier-1 rollout. Slim PR-diff-review only (no agent_discussion).
 #
 # Auth: secrets.TEIKA_GATEWAY_JWT (= teika.surfsense_api_key in SOPS,
 # fastapi-users JWT scoped to the SurfSense-as-service caller identity)
-# and secrets.TEIKA_FORGEJO_TOKEN (Forgejo PAT for diff fetch + comment
-# POST). Values mirror what's set on ojars/SurfSense.
+# and secrets.TEIKA_FORGEJO_TOKEN (Forgejo PAT for diff fetch). Teika posts
+# the final comment and commit status with its own service credential.
 #
 # The legacy `<!-- ai-agent -->` PR-body skip-convention is intentionally
 # OMITTED — retired 2026-05-01 per CLAUDE.md "Every PR must run through
@@ -20,7 +20,8 @@ on:
 jobs:
   ai-review:
     runs-on: self-hosted
-    timeout-minutes: 30
+    # The workflow only admits the job; Teika owns the long-running review.
+    timeout-minutes: 5
     # One run at a time per PR. New push supersedes in-flight review.
     concurrency:
       group: ${{ github.workflow }}-${{ github.event.pull_request.number }}
@@ -35,6 +36,7 @@ jobs:
           PR_TITLE: ${{ github.event.pull_request.title }}
           PR_BODY: ${{ github.event.pull_request.body }}
           REPO: ${{ github.repository }}
+          COMMIT_SHA: ${{ github.event.pull_request.head.sha }}
         run: |
           set -euo pipefail
           echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
@@ -50,62 +52,44 @@ jobs:
           # → `jq: Argument list too long` (exit 126) and the council silently
           # never runs. Fixed first on infra-docs (#341/#342), rolled here.
           DIFF_FILE="${RUNNER_TEMP:-/tmp}/pr-${PR_NUMBER}.diff"
-          curl -sS --http1.1 -H "Authorization: token $TEIKA_FORGEJO_TOKEN" \
+          curl -fsS --http1.1 -H "Authorization: token $TEIKA_FORGEJO_TOKEN" \
             "https://git.kapteinis.lv/api/v1/repos/$REPO/pulls/$PR_NUMBER.diff" \
             -o "$DIFF_FILE"
           echo "Diff size: $(wc -c < "$DIFF_FILE") chars"
 
-          # 2. Build request payload. `--rawfile diff <file>` reads the diff from
-          # the file (no argv size limit), replacing the old `--arg diff "$DIFF"`.
-          REQ=$(jq -n \
+          # 2. Build the request in a file so neither the diff nor JSON payload
+          # hits Linux MAX_ARG_STRLEN.
+          REQ_FILE="${RUNNER_TEMP:-/tmp}/pr-${PR_NUMBER}.req.json"
+          jq -n \
             --arg repo "$REPO" \
             --argjson pr "$PR_NUMBER" \
             --arg title "$PR_TITLE" \
             --arg body "$PR_BODY" \
+            --arg sha "$COMMIT_SHA" \
             --rawfile diff "$DIFF_FILE" \
-            '{repo:$repo, pr_number:$pr, title:$title, body:$body, diff:$diff}')
+            '{repo:$repo, pr_number:$pr, title:$title, body:$body, commit_sha:$sha, diff:$diff}' > "$REQ_FILE"
 
-          # 3. POST to Teika /review/pr. 3 retries × 30s on transient network
-          #    error. Pipeline-level errors return HTTP 200 with verdict=BLOCKED
-          #    in the body — those are reflected on the PR, not retried.
+          # 3. Admit the async review. Teika returns immediately, runs the
+          # pipeline in the background, and owns the final comment/status.
           SUCCESS=0
           for attempt in 1 2 3; do
-            if RESULT=$(curl -sSf -X POST \
-                  --max-time 1500 \
+            if curl -sSf -X POST \
+                  --max-time 30 \
                   -H "Authorization: Bearer $TEIKA_GATEWAY_JWT" \
                   -H "Content-Type: application/json" \
-                  -d "$REQ" \
-                  "http://100.64.0.5:8090/review/pr"); then
+                  --data-binary @"$REQ_FILE" \
+                  "http://100.64.0.5:8090/review/pr/async"; then
               SUCCESS=1
               break
             fi
-            echo "Attempt $attempt failed — sleeping 30s before retry..."
-            sleep 30
+            echo "Attempt $attempt failed — sleeping 10s before retry..."
+            sleep 10
           done
+          echo
 
-          # Fail-fast on triple-retry failure (closes silent-green class
-          # from SurfSense#631 — without this, RESULT empty + jq returns
-          # "null" + step exits 0 = false-pass on transport failure).
+          # A failed kick means no review exists, so fail the Actions run.
           if [ "$SUCCESS" -ne 1 ]; then
-            echo "::error::Teika /review/pr unreachable after 3 attempts"
+            echo "::error::Teika /review/pr/async kick failed after 3 attempts — review not started"
             exit 1
           fi
-
-          VERDICT=$(jq -r '.verdict' <<< "$RESULT")
-          BODY=$(jq -r '.summary_md' <<< "$RESULT")
-          echo "Teika returned verdict: $VERDICT"
-
-          # 4. Post the synthesized review as a single Forgejo PR comment.
-          # (--http1.1 for the same CF-loopback reason as step 1.)
-          curl -sSf --http1.1 -X POST \
-            -H "Authorization: token $TEIKA_FORGEJO_TOKEN" \
-            -H "Content-Type: application/json" \
-            -d "$(jq -n --arg body "$BODY" '{body:$body}')" \
-            "https://git.kapteinis.lv/api/v1/repos/$REPO/issues/$PR_NUMBER/comments"
-
-          # 5. Surface BLOCKED as workflow failure (red status check).
-          #    NEEDS_CHANGES still passes — the comment is informational.
-          if [ "$VERDICT" = "BLOCKED" ]; then
-            echo "::error::Teika returned BLOCKED — see comment on PR #$PR_NUMBER"
-            exit 1
-          fi
+          echo "Async review kicked — Teika posts the comment + sets teika/ai-review."
