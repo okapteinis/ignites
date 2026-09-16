@@ -345,7 +345,7 @@ add_filter( 'post_thumbnail_html', 'ignites_child_wrap_img_webp', 20 );
 add_filter( 'wp_get_attachment_image', 'ignites_child_wrap_img_webp', 20 );
 
 /**
- * Estimate reading time in Latvian. Returns a localized string like "5 min lasīšana".
+ * Estimate reading time in Latvian. Returns a localized string like "5 min lasīšanas".
  *
  * @param int|WP_Post|null $post Post ID, object, or null for current.
  * @return string
@@ -387,7 +387,7 @@ function ignites_child_reading_time( $post = null ) {
 	   for every minute count (no LV plural variation), so plain __() is correct —
 	   _n() here only routed the string through the `ngettext` filter, which the
 	   EN gettext map below never sees (the 2026-06-10 i18n-leak root cause). */
-	return sprintf( __( '%d min lasīšana', 'ignites-child' ), $minutes );
+	return sprintf( __( '%d min lasīšanas', 'ignites-child' ), $minutes );
 }
 
 /**
@@ -581,7 +581,7 @@ add_filter( 'gettext', function ( $translation, $text, $domain ) {
 			'Mainīt tēmu'                                                                      => 'Change theme',
 			'Pārslēgt uz tumšo tēmu'                                                           => 'Switch to dark theme',
 			'Pārslēgt uz gaišo tēmu'                                                           => 'Switch to light theme',
-			'%d min lasīšana'                                                                  => '%d min read',
+			'%d min lasīšanas'                                                                 => '%d min read',
 			'Meklēt'                                                                           => 'Search',
 			'Meklēt…'                                                                          => 'Search…',
 			'Raksta navigācija'                                                                => 'Post navigation',
