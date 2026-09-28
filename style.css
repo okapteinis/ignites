@@ -751,6 +751,10 @@ h2.entry-title a:hover {
     gap: 40px;
     align-items: start;
   }
+  .post-reading-main .entry-content {
+    margin-left: 0;
+    margin-right: auto;
+  }
   .post-toc {
     display: block;
     position: sticky;
