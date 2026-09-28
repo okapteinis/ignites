@@ -16,6 +16,7 @@ require_once get_stylesheet_directory() . '/inc/post-footnote.php';
 require_once get_stylesheet_directory() . '/inc/sidenotes.php';
 require_once get_stylesheet_directory() . '/inc/post-toc-index.php';
 require_once get_stylesheet_directory() . '/inc/post-toc.php';
+require_once get_stylesheet_directory() . '/inc/post-toc-render.php';
 
 /**
  * Load child theme translations (closes ojars/ignites#4). The theme uses

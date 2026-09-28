@@ -10,22 +10,25 @@ function ignites_child_add_post_toc_ids( $content ) {
 	}
 	global $ignites_child_post_toc;
 	$ignites_child_post_toc = array();
-	list( $has_sections, $used_ids, $reserved_heading_ids ) = ignites_child_post_toc_id_index( $content );
+	list( $has_sections, $used_ids, $reserved_heading_ids, $heading_data ) = ignites_child_post_toc_id_index( $content );
 	if ( ! $has_sections ) {
 		return $content;
 	}
+	$heading_index = 0;
 	$updated = preg_replace_callback(
 		'/<h([23])\b([^>]*)>(.*?)<\/h[23]>/isu',
-		function ( $match ) use ( &$used_ids, $reserved_heading_ids, &$ignites_child_post_toc ) {
+		function ( $match ) use ( &$used_ids, $reserved_heading_ids, $heading_data, &$heading_index, &$ignites_child_post_toc ) {
 			$level      = (int) $match[1];
 			$attributes = $match[2];
 			$inner      = $match[3];
-			$title      = ignites_child_normalize_heading_text( $inner );
-			if ( '' === $title || ignites_child_is_sources_heading( $title ) ) {
+			$heading    = $heading_data[ $heading_index++ ];
+			$title      = $heading['title'];
+			if ( ! $heading['eligible'] ) {
 				return $match[0];
 			}
 
-			list( $has_id, $id ) = ignites_child_parse_id_attribute( $attributes );
+			$has_id      = $heading['has_id'];
+			$id          = $heading['id'];
 			$generated_id = '' === $id;
 			if ( $generated_id ) {
 				$id = sanitize_title( $title );
@@ -60,18 +63,3 @@ function ignites_child_add_post_toc_ids( $content ) {
 	return null === $updated ? $content : $updated;
 }
 add_filter( 'the_content', 'ignites_child_add_post_toc_ids', 18 );
-
-function ignites_child_post_toc() {
-	global $ignites_child_post_toc;
-	$items = is_array( $ignites_child_post_toc ) ? $ignites_child_post_toc : array();
-	echo '<aside class="post-toc' . ( $items ? '' : ' is-empty' ) . '"' . ( $items ? '' : ' aria-hidden="true"' ) . '>';
-	if ( $items ) {
-		echo '<nav aria-label="' . esc_attr__( 'Satura rādītājs', 'ignites-child' ) . '">';
-		echo '<h2 class="post-toc-title">' . esc_html__( 'Satura rādītājs', 'ignites-child' ) . '</h2><ol>';
-		foreach ( $items as $item ) {
-			echo '<li class="post-toc-level-' . (int) $item['level'] . '"><a href="#' . esc_attr( $item['id'] ) . '">' . esc_html( $item['title'] ) . '</a></li>';
-		}
-		echo '</ol></nav>';
-	}
-	echo '</aside>';
-}
