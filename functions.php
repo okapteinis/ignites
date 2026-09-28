@@ -14,6 +14,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 // weekly-restorer marker block below stays untouched by footnote work.
 require_once get_stylesheet_directory() . '/inc/post-footnote.php';
 require_once get_stylesheet_directory() . '/inc/sidenotes.php';
+require_once get_stylesheet_directory() . '/inc/post-toc.php';
 
 /**
  * Load child theme translations (closes ojars/ignites#4). The theme uses
@@ -579,6 +580,7 @@ add_filter( 'gettext', function ( $translation, $text, $domain ) {
 	// see ojars/ignites#10 for the wider qTranslate-XT integration.
 	if ( $is_en && 'ignites-child' === $domain ) {
 		$child_en = array(
+			'Satura rādītājs'                                                                  => 'Table of contents',
 			'Mainīt tēmu'                                                                      => 'Change theme',
 			'Pārslēgt uz tumšo tēmu'                                                           => 'Switch to dark theme',
 			'Pārslēgt uz gaišo tēmu'                                                           => 'Switch to light theme',
