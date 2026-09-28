@@ -79,6 +79,7 @@ Text Domain:  ignites-child
   --text-xs:   clamp(0.75rem,  0.7rem  + 0.25vw, 0.875rem);
   --text-sm:   clamp(0.875rem, 0.8rem  + 0.35vw, 1rem);
   --text-base: clamp(1rem,     0.95rem + 0.25vw, 1.125rem);
+  --text-read: clamp(1.0625rem, 1rem + 0.25vw, 1.125rem);
   --text-lg:   clamp(1.125rem, 1rem    + 0.75vw, 1.5rem);
   --text-xl:   clamp(1.5rem,   1.2rem  + 1.25vw, 2.25rem);
   --text-2xl:  clamp(2rem,     1.2rem  + 2.5vw,  3.5rem);
@@ -597,8 +598,8 @@ h2.entry-title a:hover {
 
 .single .entry-content {
   font-family: var(--font-body);
-  font-size: var(--text-lg);
-  line-height: 1.85;
+  font-size: var(--text-read);
+  line-height: 1.65;
   color: var(--color-text);
 }
 .single .entry-content > p { margin: 0 0 var(--space-6); }
@@ -739,6 +740,10 @@ h2.entry-title a:hover {
     --sidenote-width: 230px;
     --sidenote-gap: 40px;
   }
+  .post-reading-main .entry-content {
+    margin-left: 0;
+    margin-right: auto;
+  }
 }
 
 @media (min-width: 1400px) {
@@ -750,10 +755,6 @@ h2.entry-title a:hover {
     grid-template-columns: minmax(180px, 220px) minmax(0, 1000px);
     gap: 40px;
     align-items: start;
-  }
-  .post-reading-main .entry-content {
-    margin-left: 0;
-    margin-right: auto;
   }
   .post-toc {
     display: block;
