@@ -5,6 +5,22 @@
  * @package Ignites_Child
  */
 
+$ignites_excerpt_view          = is_home() || is_front_page() || is_search() || is_archive();
+$ignites_single_post_content   = null;
+$more_link_text                = '';
+if ( ! $ignites_excerpt_view ) {
+	$more_link_text = sprintf(
+		wp_kses(
+			/* translators: %s: Name of current post. Only visible to screen readers */
+			__( 'Continue reading<span class="screen-reader-text"> "%s"</span>', 'ignites-child' ),
+			array( 'span' => array( 'class' => array() ) )
+		),
+		get_the_title()
+	);
+}
+if ( is_singular( 'post' ) ) {
+	$ignites_single_post_content = apply_filters( 'the_content', get_the_content( $more_link_text ) );
+}
 ?>
 <article id="post-<?php the_ID(); ?>" <?php post_class(); ?>>
 	<?php ignites_post_thumbnail(); ?>
@@ -26,9 +42,14 @@
 			?>
 		</header>
 
+		<?php if ( is_singular( 'post' ) ) : ?>
+		<div class="post-reading-layout">
+			<?php ignites_child_post_toc(); ?>
+			<div class="post-reading-main">
+		<?php endif; ?>
 		<div class="entry-content">
 			<?php
-			if ( is_home() || is_front_page() || is_search() || is_archive() ) :
+			if ( $ignites_excerpt_view ) :
 				// get_the_excerpt() (not the_excerpt()) — the_excerpt() emits its own
 				// wpautop <p>, which nested inside ours produced invalid <p><p> markup.
 				// Matches template-parts/content-hero.php.
@@ -36,16 +57,11 @@
 				<p class="entry-excerpt m-0"><?php echo wp_kses_post( get_the_excerpt() ); ?></p>
 				<?php
 			else :
-				the_content(
-					sprintf(
-						wp_kses(
-							/* translators: %s: Name of current post. Only visible to screen readers */
-							__( 'Continue reading<span class="screen-reader-text"> "%s"</span>', 'ignites-child' ),
-							array( 'span' => array( 'class' => array() ) )
-						),
-						get_the_title()
-					)
-				);
+				if ( is_singular( 'post' ) ) {
+					echo str_replace( ']]>', ']]&gt;', $ignites_single_post_content ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- the_content filters sanitize/format post HTML.
+				} else {
+					the_content( $more_link_text );
+				}
 				wp_link_pages(
 					array(
 						'before' => '<div class="page-links">' . esc_html__( 'Pages:', 'ignites-child' ),
@@ -62,5 +78,9 @@
 		}
 		get_template_part( 'template-parts/entry', 'footer' );
 		?>
+		<?php if ( is_singular( 'post' ) ) : ?>
+			</div>
+		</div>
+		<?php endif; ?>
 	</div>
 </article>

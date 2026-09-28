@@ -13,6 +13,16 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
+/** Normalize heading HTML to the displayed plain-text label. */
+function ignites_child_normalize_heading_text( $heading ) {
+	return trim( html_entity_decode( wp_strip_all_tags( $heading ), ENT_QUOTES, get_bloginfo( 'charset' ) ) );
+}
+
+/** Identify the source-list heading in either supported language. */
+function ignites_child_is_sources_heading( $title ) {
+	return 1 === preg_match( '/^(?:Avoti\s+un\s+piezīmes|Sources\s+and\s+notes)$/iu', trim( $title ) );
+}
+
 /**
  * Convert numbered citation markers into responsive sidenote markup.
  *
@@ -24,12 +34,22 @@ function ignites_child_add_sidenotes( $content ) {
 		return $content;
 	}
 
-	if ( ! preg_match( '/<h2\b[^>]*>\s*(?:Avoti\s+un\s+piezīmes|Sources\s+and\s+notes)\s*<\/h2>/iu', $content, $heading, PREG_OFFSET_CAPTURE ) ) {
+	if ( ! preg_match_all( '/<h2\b[^>]*>(.*?)<\/h2>/isu', $content, $headings, PREG_OFFSET_CAPTURE ) ) {
+		return $content;
+	}
+	$source_heading_offset = null;
+	foreach ( $headings[1] as $index => $heading ) {
+		if ( ignites_child_is_sources_heading( ignites_child_normalize_heading_text( $heading[0] ) ) ) {
+			$source_heading_offset = $headings[0][ $index ][1];
+			break;
+		}
+	}
+	if ( null === $source_heading_offset ) {
 		return $content;
 	}
 
-	$body_before_sources = substr( $content, 0, $heading[0][1] );
-	$sources_section     = substr( $content, $heading[0][1] );
+	$body_before_sources = substr( $content, 0, $source_heading_offset );
+	$sources_section     = substr( $content, $source_heading_offset );
 	if ( ! preg_match( '/<ol\b[^>]*>(.*?)<\/ol>/is', $sources_section, $list, PREG_OFFSET_CAPTURE ) ) {
 		return $content;
 	}
