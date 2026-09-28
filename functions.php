@@ -14,6 +14,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 // weekly-restorer marker block below stays untouched by footnote work.
 require_once get_stylesheet_directory() . '/inc/post-footnote.php';
 require_once get_stylesheet_directory() . '/inc/sidenotes.php';
+require_once get_stylesheet_directory() . '/inc/post-toc-index.php';
 require_once get_stylesheet_directory() . '/inc/post-toc.php';
 
 /**
