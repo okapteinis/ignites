@@ -814,6 +814,11 @@ h2.entry-title a:hover {
     display: block;
   }
 }
+@media (max-width: 480px) {
+  .single .entry-content > p {
+    font-size: inherit;
+  }
+}
 @media print {
   .margin-toggle {
     display: none;
