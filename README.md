@@ -27,3 +27,4 @@ The toggle persists to `localStorage['ignites-child-theme']`. Initial theme defa
 - No new JS dependencies (no jQuery plugins).
 - Single-post section headings get a left contents rail on wide screens; the rail keeps its column when a post has no eligible section headings. Desktop citation notes stay visible in a collision-spaced right margin; mobile notes expand inline, and the original source list remains the no-script fallback. On wide screens, the date/tag row and newsletter/social panel align to the reading column.
 - Uses the existing parent's `ignites_post_thumbnail`, `ignites_layout_option`, `ignites_num_post_nav` helpers.
+- Featured image on home/archive cards only: set post meta `_ignites_thumb_archive_only` to `1` (`wp post meta update <ID> _ignites_thumb_archive_only 1`) and `template-parts/content.php` skips the thumbnail on that post's own page. `og:image` and JSON-LD still use the featured image.
