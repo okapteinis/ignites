@@ -676,7 +676,7 @@ h2.entry-title a:hover {
 }
 
 /* --------------------------------------------------------------------------
-   3.6a Citation sidenotes — Tufte-inspired, no JavaScript.
+   3.6a Citation sidenotes — anchored, single-open margin popovers.
    -------------------------------------------------------------------------- */
 .sidenote-number {
   display: inline-block;
@@ -707,17 +707,21 @@ h2.entry-title a:hover {
   white-space: nowrap;
   border: 0;
 }
-.margin-toggle:focus-visible + .sidenote {
+.margin-toggle:focus-visible + .sidenote-number {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 3px;
+  border-radius: 2px;
+}
+.margin-toggle:focus-visible ~ .sidenote {
   outline: 2px solid var(--color-primary);
   outline-offset: 3px;
 }
 .sidenote {
-  float: right;
-  clear: right;
-  width: var(--sidenote-width, 230px);
-  margin-right: calc(-1 * (var(--sidenote-width, 230px) + var(--sidenote-gap, 40px)));
-  margin-bottom: var(--space-4);
-  padding: 0 0 var(--space-2);
+  display: none;
+  float: none;
+  clear: none;
+  width: auto;
+  margin: 0;
   color: var(--color-text-muted);
   font-family: var(--font-body);
   font-size: inherit;
@@ -731,6 +735,34 @@ h2.entry-title a:hover {
   display: none;
 }
 @media (min-width: 1200px) {
+  html.has-sidenote-popovers .sidenote.is-popover-open {
+    display: block;
+    position: fixed;
+    z-index: 1000;
+    left: 16px;
+    top: 16px;
+    width: min(230px, calc(100vw - 32px));
+    max-height: min(60vh, 30rem);
+    overflow-y: auto;
+    margin: 0;
+    padding: var(--space-3) var(--space-4);
+    color: var(--color-text);
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-md);
+    font-size: 14px;
+    line-height: 1.45;
+  }
+  /* If the script cannot load, keep the original source list available. */
+  .single .sidenote-sources-heading,
+  .single .sidenote-sources {
+    display: block;
+  }
+  html.has-sidenote-popovers .single .sidenote-sources-heading,
+  html.has-sidenote-popovers .single .sidenote-sources {
+    display: none;
+  }
   .single .site-main {
     max-width: 1000px;
   }
@@ -741,6 +773,11 @@ h2.entry-title a:hover {
     --sidenote-gap: 40px;
   }
   .post-reading-main .entry-content {
+    margin-left: 0;
+    margin-right: auto;
+  }
+  .single .entry-footer {
+    max-width: var(--content-narrow);
     margin-left: 0;
     margin-right: auto;
   }
@@ -755,6 +792,11 @@ h2.entry-title a:hover {
     grid-template-columns: minmax(180px, 220px) minmax(0, 1000px);
     gap: 40px;
     align-items: start;
+  }
+  /* Navigation sits outside the article grid, so offset it to the reading column. */
+  .single .navigation.post-navigation {
+    margin-left: 260px;
+    margin-right: 0;
   }
   .post-toc {
     display: block;
@@ -795,8 +837,7 @@ h2.entry-title a:hover {
 }
 @media (max-width: 1199px) {
   .sidenote {
-    display: none;
-    float: none;
+    position: static;
     width: auto;
     margin: var(--space-3) 0 var(--space-4);
     padding: var(--space-3) var(--space-4);
@@ -804,7 +845,7 @@ h2.entry-title a:hover {
     border-left: 3px solid var(--color-primary);
     border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
   }
-  .margin-toggle:checked + .sidenote {
+  .margin-toggle:checked ~ .sidenote {
     display: block;
   }
   .sidenote-sources {
@@ -822,6 +863,22 @@ h2.entry-title a:hover {
 @media print {
   .margin-toggle {
     display: none;
+  }
+  .single .sidenote,
+  html.has-sidenote-popovers .sidenote.is-popover-open {
+    display: inline;
+    position: static;
+    width: auto;
+    max-height: none;
+    overflow: visible;
+    margin: 0;
+    padding: 0;
+    color: var(--color-text);
+    background: transparent;
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
+    font-size: 0.9em;
   }
   .sidenote {
     display: inline;
