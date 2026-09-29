@@ -865,7 +865,12 @@ function ignites_child_opengraph() {
 		if ( ! $url ) {
 			$url = get_permalink( $id );
 		}
-		$excerpt = wp_strip_all_tags( get_the_excerpt( $id ) );
+		$excerpt = get_the_excerpt( $id );
+		// A manual bilingual excerpt is stored as [:lv]…[:en]…[:] and comes back raw here.
+		if ( function_exists( 'qtranxf_use' ) ) {
+			$excerpt = qtranxf_use( $lang, $excerpt, false );
+		}
+		$excerpt = wp_strip_all_tags( $excerpt );
 		$desc    = ( '' !== $excerpt ) ? $excerpt : $title;
 		$thumb   = get_the_post_thumbnail_url( $id, 'large' );
 		$image   = $thumb ? $thumb : $og_card;
