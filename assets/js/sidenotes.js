@@ -1,5 +1,5 @@
 /**
- * Citation sidenotes: anchored desktop popovers with native mobile disclosure.
+ * Citation sidenotes: visible in the desktop margin, inline disclosure on mobile.
  */
 (function () {
 	'use strict';
@@ -7,9 +7,6 @@
 	var toggles = Array.prototype.slice.call( document.querySelectorAll( '.single .margin-toggle' ) );
 	var desktop = window.matchMedia( '(min-width: 1200px)' );
 	var records = [];
-	var byToggle = new WeakMap();
-	var openRecord = null;
-	var positionFrame = null;
 
 	toggles.forEach( function ( toggle ) {
 		var marker = toggle.nextElementSibling;
@@ -17,9 +14,7 @@
 		if ( ! marker || ! note || ! note.classList.contains( 'sidenote' ) ) {
 			return;
 		}
-		var record = { toggle: toggle, marker: marker, note: note, parent: note.parentNode };
-		records.push( record );
-		byToggle.set( toggle, record );
+		records.push( { toggle: toggle, marker: marker, note: note, parent: note.parentNode } );
 	} );
 
 	if ( ! records.length ) {
@@ -28,133 +23,98 @@
 
 	document.documentElement.classList.add( 'has-sidenote-popovers' );
 
-	function restoreNote( record ) {
-		record.note.classList.remove( 'is-popover-open' );
-		record.note.style.removeProperty( 'left' );
-		record.note.style.removeProperty( 'top' );
-		if ( record.note.parentNode !== record.parent ) {
-			record.parent.insertBefore( record.note, record.marker.nextSibling );
-		}
+	function restoreNotes() {
+		records.forEach( function ( record ) {
+			record.note.classList.remove( 'is-rail-note' );
+			record.note.style.removeProperty( 'left' );
+			record.note.style.removeProperty( 'top' );
+			record.note.style.removeProperty( 'width' );
+			if ( record.note.parentNode !== record.parent ) {
+				record.parent.insertBefore( record.note, record.marker.nextSibling );
+			}
+		} );
 	}
 
-	function setPosition( record ) {
-		var content = record.toggle.closest( '.entry-content' );
-		if ( ! content || ! desktop.matches || ! record.toggle.checked ) {
+	function positionNotes() {
+		if ( ! desktop.matches || window.matchMedia( 'print' ).matches ) {
+			restoreNotes();
 			return;
 		}
 
-		var markerRect = record.marker.getBoundingClientRect();
-		var contentRect = content.getBoundingClientRect();
-		var noteRect = record.note.getBoundingClientRect();
-		var gap = parseFloat( window.getComputedStyle( content ).getPropertyValue( '--sidenote-gap' ) ) || 40;
-		var edge = 16;
-		var maxLeft = Math.max( edge, window.innerWidth - noteRect.width - edge );
-		var left = Math.max( edge, Math.min( contentRect.right + gap, maxLeft ) );
-		var maxTop = Math.max( edge, window.innerHeight - noteRect.height - edge );
-		var top = Math.max( edge, Math.min( markerRect.top, maxTop ) );
+		var positioned = records.map( function ( record ) {
+			var content = record.toggle.closest( '.entry-content' );
+			var left = content ? content.getBoundingClientRect().right + window.scrollX + 40 : 0;
+			return {
+				record: record,
+				content: content,
+				y: record.marker.getBoundingClientRect().top + window.scrollY,
+				left: left,
+				width: Math.max( 120, Math.min( 280, window.innerWidth - left - 16 ) )
+			};
+		} ).filter( function ( item ) {
+			return item.content;
+		} ).sort( function ( a, b ) {
+			return a.y - b.y;
+		} );
 
-		record.note.style.left = Math.round( left ) + 'px';
-		record.note.style.top = Math.round( top ) + 'px';
+		positioned.forEach( function ( item ) {
+			var record = item.record;
+			if ( record.note.parentNode !== document.body ) {
+				document.body.appendChild( record.note );
+			}
+			record.note.classList.add( 'is-rail-note' );
+			record.note.style.width = Math.round( item.width ) + 'px';
+		} );
+
+		// Read every note height before writing any coordinates to avoid forced
+		// layout once per note on a long article.
+		positioned.forEach( function ( item ) {
+			item.height = item.record.note.getBoundingClientRect().height;
+		} );
+
+		var previousBottom = 0;
+		var gap = 10;
+		positioned.forEach( function ( item ) {
+			var top = Math.max( item.y, previousBottom + gap );
+			item.record.note.style.left = Math.round( item.left ) + 'px';
+			item.record.note.style.top = Math.round( top ) + 'px';
+			previousBottom = top + item.height;
+		} );
 	}
 
-	function openNote( record ) {
-		record.note.classList.add( 'is-popover-open' );
-		if ( record.note.parentNode !== document.body ) {
-			document.body.appendChild( record.note );
-		}
-		setPosition( record );
-	}
-
-	function closeToggle( toggle, restoreFocus ) {
-		var record = byToggle.get( toggle );
-		if ( ! record ) {
-			return;
-		}
-		toggle.checked = false;
-		restoreNote( record );
-		if ( openRecord === record ) {
-			openRecord = null;
-		}
-		if ( restoreFocus ) {
-			toggle.focus();
-		}
-	}
-
+	positionNotes();
+	var positionFrame = null;
 	function schedulePosition() {
 		if ( positionFrame !== null ) {
 			return;
 		}
 		positionFrame = window.requestAnimationFrame( function () {
 			positionFrame = null;
-			if ( openRecord && openRecord.toggle.checked && desktop.matches ) {
-				setPosition( openRecord );
-			}
+			positionNotes();
 		} );
 	}
 
-	function handleViewportChange() {
-		if ( ! desktop.matches ) {
-			if ( openRecord ) {
-				restoreNote( openRecord );
-				openRecord = null;
+	window.addEventListener( 'resize', schedulePosition );
+	window.addEventListener( 'load', schedulePosition );
+	window.addEventListener( 'beforeprint', restoreNotes );
+	window.addEventListener( 'afterprint', positionNotes );
+	if ( window.ResizeObserver ) {
+		var contentObserver = new ResizeObserver( schedulePosition );
+		var observedContent = [];
+		records.forEach( function ( record ) {
+			var content = record.toggle.closest( '.entry-content' );
+			if ( content && observedContent.indexOf( content ) === -1 ) {
+				observedContent.push( content );
+				contentObserver.observe( content );
 			}
-			return;
-		}
-		if ( ! openRecord || ! openRecord.toggle.checked ) {
-			openRecord = records.find( function ( record ) { return record.toggle.checked; } ) || null;
-		}
-		if ( openRecord ) {
-			records.forEach( function ( record ) {
-				if ( record !== openRecord && record.toggle.checked ) {
-					closeToggle( record.toggle, false );
-				}
-			} );
-			openNote( openRecord );
-		}
-	}
-
-	records.forEach( function ( record ) {
-			record.toggle.addEventListener( 'change', function () {
-				if ( record.toggle.checked && desktop.matches ) {
-					if ( openRecord && openRecord !== record ) {
-						closeToggle( openRecord.toggle, false );
-					}
-					openRecord = record;
-					openNote( record );
-				} else if ( record.toggle.checked ) {
-					openRecord = null;
-					restoreNote( record );
-				} else {
-					if ( openRecord === record ) {
-						openRecord = null;
-					}
-					restoreNote( record );
-				}
 		} );
-	} );
-
-	document.addEventListener( 'click', function ( event ) {
-		if ( ! desktop.matches || ! openRecord || ( event.target.closest && event.target.closest( '.margin-toggle, .sidenote-number, .sidenote.is-popover-open' ) ) ) {
-			return;
-		}
-		closeToggle( openRecord.toggle, false );
-	} );
-
-	document.addEventListener( 'keydown', function ( event ) {
-		if ( event.key !== 'Escape' || ! desktop.matches ) {
-			return;
-		}
-		if ( openRecord ) {
-			event.preventDefault();
-			closeToggle( openRecord.toggle, true );
-		}
-	} );
-
-	window.addEventListener( 'resize', handleViewportChange );
-	window.addEventListener( 'scroll', schedulePosition, true );
+	}
+	if ( document.fonts && document.fonts.ready ) {
+		document.fonts.ready.then( schedulePosition );
+	}
 	if ( desktop.addEventListener ) {
-		desktop.addEventListener( 'change', handleViewportChange );
+		desktop.addEventListener( 'change', schedulePosition );
 	} else if ( desktop.addListener ) {
-		desktop.addListener( handleViewportChange );
+		desktop.addListener( schedulePosition );
 	}
 }());
