@@ -23,7 +23,13 @@ if ( is_singular( 'post' ) ) {
 }
 ?>
 <article id="post-<?php the_ID(); ?>" <?php post_class(); ?>>
-	<?php ignites_post_thumbnail(); ?>
+	<?php
+	// Post meta `_ignites_thumb_archive_only`: show the featured image on home/archive/search
+	// cards but not on the open post (og:image + JSON-LD still use it).
+	if ( ! ( is_singular() && get_post_meta( get_the_ID(), '_ignites_thumb_archive_only', true ) ) ) {
+		ignites_post_thumbnail();
+	}
+	?>
 	<div class="wrap-content">
 		<div class="entry-category">
 			<?php
