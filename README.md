@@ -25,5 +25,5 @@ The toggle persists to `localStorage['ignites-child-theme']`. Initial theme defa
 
 - No parent files are modified.
 - No new JS dependencies (no jQuery plugins).
-- Single-post section headings get a left contents rail on wide screens; the rail keeps its column when a post has no eligible section headings. Citation sidenotes inherit the surrounding article text size.
+- Single-post section headings get a left contents rail on wide screens; the rail keeps its column when a post has no eligible section headings. Desktop citation notes open as one-at-a-time, citation-anchored right-margin popovers; mobile notes expand inline, and the original source list remains the no-script fallback. On wide screens, the date/tag row aligns to the reading column while the newsletter/social panel keeps its wider layout.
 - Uses the existing parent's `ignites_post_thumbnail`, `ignites_layout_option`, `ignites_num_post_nav` helpers.

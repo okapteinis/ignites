@@ -78,9 +78,9 @@ function ignites_child_add_sidenotes( $content ) {
 			$id       = 'sidenote-' . get_the_ID() . '-' . $number . '-' . $instance;
 			$label    = sprintf( __( 'Piezīme %d', 'ignites-child' ), $number );
 
-			return '<label class="sidenote-number" for="' . esc_attr( $id ) . '" data-note="' . esc_attr( $number ) . '"><span class="screen-reader-text">' . esc_html( $label ) . '</span></label>'
-				. '<input class="margin-toggle" type="checkbox" id="' . esc_attr( $id ) . '" aria-label="' . esc_attr( $label ) . '">'
-				. '<span class="sidenote" role="note">' . $source_items[ $number ] . '</span>';
+			return '<input class="margin-toggle" type="checkbox" id="' . esc_attr( $id ) . '" aria-label="' . esc_attr( $label ) . '" aria-controls="' . esc_attr( $id . '-content' ) . '">'
+				. '<label class="sidenote-number" for="' . esc_attr( $id ) . '" data-note="' . esc_attr( $number ) . '"><span class="screen-reader-text">' . esc_html( $label ) . '</span></label>'
+				. '<span class="sidenote" id="' . esc_attr( $id . '-content' ) . '" role="note">' . $source_items[ $number ] . '</span>';
 		},
 		$body_before_sources
 	);
@@ -95,3 +95,24 @@ function ignites_child_add_sidenotes( $content ) {
 	return $enhanced . $sources_section;
 }
 add_filter( 'the_content', 'ignites_child_add_sidenotes', 20 );
+
+/** Load the desktop sidenote popover behavior on article pages. */
+function ignites_child_sidenote_assets() {
+	if ( ! is_singular( 'post' ) ) {
+		return;
+	}
+
+	$script = get_stylesheet_directory() . '/assets/js/sidenotes.js';
+	if ( ! is_file( $script ) ) {
+		return;
+	}
+
+	wp_enqueue_script(
+		'ignites-child-sidenotes',
+		get_stylesheet_directory_uri() . '/assets/js/sidenotes.js',
+		array(),
+		(string) filemtime( $script ),
+		true
+	);
+}
+add_action( 'wp_enqueue_scripts', 'ignites_child_sidenote_assets', 20 );
